@@ -30,6 +30,7 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -40,7 +41,7 @@ jobs:
       - name: Run Lighthouse CI
         run: pnpm exec lhci autorun
         env:
-          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+          LHCI_GITHUB_APP_TOKEN: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') && secrets.LHCI_GITHUB_APP_TOKEN || '' }}
 
       - name: Upload Lighthouse artifacts
         if: always()
