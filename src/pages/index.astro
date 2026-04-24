@@ -1,0 +1,36 @@
+---
+import Base from "@/layouts/Base.astro";
+
+const axes = [
+  { id: 1, label: "同等代替機種の自動提示" },
+  { id: 2, label: "買い替え ROI 判定" },
+  { id: 3, label: "モデルチェンジ周期予測" },
+  { id: 5, label: "世代差分の意味翻訳" },
+  { id: 6, label: "ユーザー条件マッチング" },
+];
+---
+
+<Base title="家電買い時 — 買い替え意思決定ダッシュボード">
+  <main class="mx-auto max-w-3xl px-6 py-20">
+    <p class="text-sm font-medium text-blue-600">Phase 1 (MVP) 準備中</p>
+    <h1 class="mt-2 text-4xl font-bold tracking-tight">家電買い時</h1>
+    <p class="mt-4 text-lg text-neutral-600">
+      価格・寿命・世代差・代替候補・利用条件を統合し、「今・この機種を買うべきか」を一枚のダッシュボードで判定します。
+    </p>
+    <section class="mt-10">
+      <h2 class="text-sm font-semibold text-neutral-500 uppercase">実装予定の5軸</h2>
+      <ul class="mt-4 space-y-2">
+        {
+          axes.map((axis) => (
+            <li class="flex items-center gap-3 rounded-lg border border-neutral-200 px-4 py-3">
+              <span class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-blue-50 text-sm font-semibold text-blue-700">
+                {axis.id}
+              </span>
+              <span class="text-neutral-800">{axis.label}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+  </main>
+</Base>

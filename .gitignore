@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+.output/
+.vercel/
+.wrangler/
+
+# Environment / secrets
+.env
+.env.*
+.dev.vars
+.envrc
+
+# Logs
+npm-debug.log*
+pnpm-debug.log*
+*.log
+
+# Editor
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Astro
+.astro/

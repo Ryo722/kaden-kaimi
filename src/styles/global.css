@@ -1,0 +1,7 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans:
+    "Hiragino Kaku Gothic ProN", "Noto Sans JP", system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+}
