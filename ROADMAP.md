@@ -12,7 +12,7 @@
 - [x] 技術選定（Astro + Cloudflare Pages + git JSON）
 - [x] 設計ドキュメント一式作成
 
-### Phase 1: MVP（進行中 / 目標 6–8 週間）
+### Phase 1: MVP（完了 / 2026-04-24）
 
 **スコープ**: ドラム式洗濯機カテゴリ、5機種、5軸すべて実装
 
@@ -20,19 +20,19 @@
 - 機種詳細ページ1枚（5軸ダッシュボード）
 - 手動投入の機種マスタ 5 件
 - 手動投入の価格データ 30 日分
-- Cloudflare Pages にデプロイ済み
+- Cloudflare Pages にデプロイ済み — <https://kaden-kaimi.pages.dev/>
 
 **成功指標**
-- 5軸すべてが実機種データで機能する
-- Lighthouse Performance 90+、Accessibility 95+
-- ユニットテストカバレッジ 80%+
+- 5軸すべてが実機種データで機能する ✅
+- Lighthouse Performance 90+、Accessibility 95+ ✅（実測 P100/A100）
+- ユニットテストカバレッジ 80%+ ✅（stmts 97.27% / branches 89.65%）
 
 **進捗**（最終更新: 2026-04-24）
 - [x] タスク 1: プロジェクト初期化
 - [x] タスク 2: 型定義・サンプルデータ投入
-- [x] タスク 3: 5軸ロジック実装（100 tests、カバレッジ stmts 97.27% / branches 89.65%）
-- [ ] タスク 4: 機種詳細ページ ← **次セッション**（引き継ぎ: `docs/handoffs/task-4.md`）
-- [ ] タスク 5: Cloudflare Pages デプロイ
+- [x] タスク 3: 5軸ロジック実装（133 tests、カバレッジ stmts 97.27% / branches 89.65%）
+- [x] タスク 4: 機種詳細ページ（5軸ダッシュボード、Lighthouse P100/A100）
+- [x] タスク 5: Cloudflare Pages デプロイ + Lighthouse CI
 
 ### Phase 2: 自動化（+4 週間）
 
@@ -96,3 +96,6 @@
 | 2026-04-24 | 軸1 スコア式を `feature × 0.7 + 価格差 × 0.3` で固定 | MVP 段階では機能側を優先、価格比重は運用データ蓄積後に再調整 |
 | 2026-04-24 | ROI 境界値は下側カテゴリに倒すルール採用 | 5.0/8.0/12.0 をそれぞれ depends / wait / no-benefit に含める（保守的判定） |
 | 2026-04-24 | 軸5 のコスト換算は UI 側の責務に分離 | 軸5 lib は「何が変わったか」のみ返す。金額換算は軸2 ROI と組み合わせる |
+| 2026-04-24 | Node 22.12+ にピン（`.nvmrc=22`、engines `>=22.12.0`） | Astro 6 の Node 要件に合わせる。初回 Cloudflare Pages ビルドが v20 で失敗したため |
+| 2026-04-24 | Lighthouse CI は静的ビルドを lhci 内蔵 server で計測 | 本番直接計測よりランナー地理差・CDN 負荷に影響されず再現性が高い。`uses-http2` のみスキップ |
+| 2026-04-24 | Phase 1 完了、Phase 2 に遷移 | 本番公開済み、CI/Lighthouse 緑、5機種で5軸ダッシュボード動作 |

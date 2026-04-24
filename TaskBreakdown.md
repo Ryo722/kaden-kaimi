@@ -71,13 +71,13 @@ Phase 1 の完了条件は `ROADMAP.md` の「Phase 1 成功指標」を参照�
 
 ## 5. デプロイ
 
-- [ ] 5.1 Cloudflare Pages プロジェクト作成
-- [ ] 5.2 GitHub 連携・自動デプロイ設定
-- [ ] 5.3 プレビュー環境と本番環境の分離
-- [ ] 5.4 本番 URL は `*.pages.dev` を使用（独自ドメインは Phase 2 以降で判断）
-- [ ] 5.5 Lighthouse CI 組み込み（GitHub Actions）
+- [x] 5.1 Cloudflare Pages プロジェクト作成（`kaden-kaimi`、build `pnpm build`、output `dist/client`、NODE_VERSION=22）
+- [x] 5.2 GitHub 連携・自動デプロイ設定（`Ryo722/kaden-kaimi` / `main` → 自動本番デプロイ）
+- [x] 5.3 プレビュー環境と本番環境の分離（PR ごとに `{hash}.kaden-kaimi.pages.dev` 生成を確認）
+- [x] 5.4 本番 URL は `*.pages.dev` を使用（独自ドメインは Phase 2 以降で判断）
+- [x] 5.5 Lighthouse CI 組み込み（GitHub Actions、閾値 P90/A95/BP90/SEO90、error 級）
 
-**完了条件**: 本番 URL で全機種ページがアクセス可能、CI で Lighthouse 基準を満たす
+**完了条件**: 本番 URL で全機種ページがアクセス可能、CI で Lighthouse 基準を満たす ✅（2026-04-24 達成、実測 P100/A100/BP96/SEO100）
 
 ## 依存関係
 
