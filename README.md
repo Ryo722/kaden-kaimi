@@ -43,16 +43,29 @@
 
 詳細: [docs/architecture.md](./docs/architecture.md)
 
-## セットアップ
+## 現在のステータス（2026-04-24）
 
-初回セットアップ:
+**Phase 1 (MVP) 進行中** — 2/5 タスク完了
+
+- ✅ タスク 1: プロジェクト初期化（Astro + Tailwind + Cloudflare adapter）
+- ✅ タスク 2: 型定義（zod）・サンプルデータ（5 機種 × 30 日）
+- ⏳ **タスク 3: 5 軸ロジック実装（次のセッションで着手）**
+- ⬜ タスク 4: 機種詳細ページ
+- ⬜ タスク 5: Cloudflare Pages デプロイ
+
+次セッションの引き継ぎ: [`docs/handoffs/task-3.md`](./docs/handoffs/task-3.md)
+
+## セットアップ
 
 ```bash
 pnpm install
-pnpm dev        # 開発サーバー起動
-pnpm build      # Cloudflare Pages 向けビルド
-pnpm typecheck  # Astro/TS 型チェック
-pnpm test       # Vitest
+pnpm dev              # 開発サーバー起動
+pnpm build            # Cloudflare Pages 向けビルド
+pnpm typecheck        # Astro/TS 型チェック
+pnpm test             # Vitest
+pnpm test:coverage    # カバレッジ測定（src/lib は 80% 閾値）
+pnpm lint             # ESLint（flat config）
+pnpm validate         # data/ JSON スキーマ検証
 ```
 
 ## ディレクトリ構成
@@ -69,11 +82,12 @@ kaden-kaimi/
 │   ├── logic-specs.md
 │   ├── coding-conventions.md
 │   ├── api-integration.md
+│   ├── handoffs/       # セッション引き継ぎ
 │   └── devlog/         # 日次開発ログ
-├── src/                # アプリコード（Phase 1 で生成）
-├── data/               # JSON データ（Phase 1 で生成）
+├── src/                # アプリコード（types/, pages/, layouts/, styles/, lib/ 予定）
+├── data/               # JSON データ（models/, prices/, brands, energy-rates）
 ├── workers/            # Cloudflare Workers（Phase 2 で生成）
-└── scripts/            # CLI ツール
+└── scripts/            # CLI ツール（validate-data, generate-sample-prices）
 ```
 
 ## ドキュメント索引
@@ -81,6 +95,8 @@ kaden-kaimi/
 - 設計: [architecture.md](./docs/architecture.md), [data-schema.md](./docs/data-schema.md), [logic-specs.md](./docs/logic-specs.md)
 - 規約: [coding-conventions.md](./docs/coding-conventions.md)
 - 運用: [api-integration.md](./docs/api-integration.md)
+- 引き継ぎ: [handoffs/](./docs/handoffs/)
+- 開発ログ: [devlog/](./docs/devlog/)
 
 ## 開発フロー
 
