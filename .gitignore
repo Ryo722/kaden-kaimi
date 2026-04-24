@@ -34,3 +34,6 @@ coverage/
 
 # Playwright MCP snapshots
 .playwright-mcp/
+
+# Lighthouse CI local output
+.lighthouseci/
