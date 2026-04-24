@@ -112,6 +112,42 @@ type RoiResult = {
 - `年間差額 <= 0` → `paybackYears = Infinity`、`verdict: "no-benefit"`
 - `current` が未入力 → この軸をスキップ（UI で入力促す）
 
+### 軸2 拡張: 非光熱費要因の補正（暫定モデル）
+
+実装: `src/lib/extended-roi.ts`。`calculateRoi` を変更せずラップし、光熱費のみの基本計算に以下の年間換算コストを加算する。Phase 2 で実データ（メーカー公称の故障率・洗剤消費量）に差し替える想定。
+
+**(A) 故障リスクコスト**（現機種の年齢から期待修理費を算出）
+
+`AXIS2_FAILURE_RISK_TABLE` に年齢帯別の `{annualProbability, avgRepairCost}` を定義し、`failureRiskAnnualCost = annualProbability × avgRepairCost` を年間削減額に加算する。買い替えにより回避できる「平均的な年間修理費」を近似する。初期値（Phase 1 暫定）:
+
+| 現機種年齢 | 年間故障確率 | 平均修理費 | 年間期待コスト |
+|---|---|---|---|
+| 0〜4 年 | 1% | ¥20,000 | ¥200 |
+| 5〜7 年 | 4% | ¥30,000 | ¥1,200 |
+| 8〜10 年 | 10% | ¥40,000 | ¥4,000 |
+| 11〜13 年 | 18% | ¥50,000 | ¥9,000 |
+| 14 年〜 | 28% | ¥60,000 | ¥16,800 |
+
+**(B) 洗剤自動投入による節約**
+
+新機種が `auto-detergent` を備え、かつユーザーが「現機種は対応していない」と宣言した場合のみ、`AXIS2_DETERGENT_ANNUAL_SAVING_YEN = 3000` を年間削減額に加算する（標準洗剤 40ml/回 × 週 7 回 × 52 週 × 単価 ¥800/L の約 25% 節約を想定）。
+
+**合算ロジック**
+
+```
+adjustedAnnualSaving = base.annualSaving + failureRiskAnnualCost + detergentAnnualSaving
+adjustedPaybackYears = adjustedAnnualSaving <= 0 ? Infinity : nextPriceYen / adjustedAnnualSaving
+adjustedVerdict      = 軸2 と同じ閾値（5 / 8 / 12）で判定
+```
+
+`base` が `null`（`current` 未入力）なら拡張も `null` を返す。
+
+### 軸2 補助: 非金銭メリットの翻訳
+
+`AXIS2_FEATURE_VALUE_PROPS` に機能キーごとの「新機種にあることで得られる非金銭的価値」を日本語文で定義（例: `heat-pump` → 「衣類ダメージと電気代を両立で削減」）。UI は `nextModel.specs.features` を走査して登録済みキーのみリスト表示する。未登録キーは表示しない。
+
+この翻訳は UI 専用で、軸2 のスコア計算には影響させない。
+
 ## 軸3: モデルチェンジ周期予測
 
 **目的**: 次モデル発表までの残期間と、旧モデル値下がり幅を予測。
@@ -272,6 +308,21 @@ type MatchResult = Array<{
 ```
 
 トップ 3 を返す。`totalScore` 降順、同点時は `model.id` 昇順で決定的。
+
+## 現在価格の採用ロジック
+
+`PriceHistory` の最新レコードから「現在価格」を取り出す際、用途により異なるフィールドを採用する。混在を避けるため、`src/lib/prices.ts` に専用ヘルパーを用意する。
+
+| 用途 | 関数 | 採用値 | 意図 |
+|---|---|---|---|
+| 表示用（ヘッダー、価格差、予算適合 UI） | `getDisplayPrice(record)` | `min(rakutenMin, yahooMin)`（非 null のみ対象） | ユーザーが実際に買える最安値を示す |
+| 内部計算用（軸3 値下がり予測、軸5 `priceDeltaYen` の整合、軸6 内部比較） | `getInternalPrice(record)` | `rakutenAvg` | 平均トレンドを優先、軸3 の集計（`AXIS3_PRICE_FIELD = "rakutenAvg"`) と一貫 |
+
+共通規約:
+
+- 入力 `record` が `null`（価格履歴 0 件）または全フィールドが `null` のとき、戻り値は `null`
+- 呼び出し側は `null` のとき `model.msrp` を代替値として使うか、「データ取得中」と UI 表示する
+- 軸6 `matchModels` の `currentPrices` には `getDisplayPrice` を採用する（ユーザー視点の予算判定）
 
 ## 共通原則
 

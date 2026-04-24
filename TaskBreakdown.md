@@ -55,19 +55,19 @@ Phase 1 の完了条件は `ROADMAP.md` の「Phase 1 成功指標」を参照�
 
 ## 4. 機種詳細ページ
 
-- [ ] 4.1 ルーティング `src/pages/washers/[modelId].astro`
-- [ ] 4.2 Astro コンポーネント実装
+- [x] 4.1 ルーティング `src/pages/washers/[modelId].astro`（`prerender = true` / `getStaticPaths` で 5 件生成）
+- [x] 4.2 Astro コンポーネント実装
   - `src/components/BuyTimingSignal.astro`（軸3）
   - `src/components/AlternativeModels.astro`（軸1）
   - `src/components/GenerationDiff.astro`（軸5）
-- [ ] 4.3 React Island 実装
-  - `src/components/RoiCalculator.tsx`（軸2）
+- [x] 4.3 React Island 実装（`client:visible` でオンデマンド水和）
+  - `src/components/RoiCalculator.tsx`（軸2 基本 + 拡張: 故障リスク・洗剤節約・非金銭メリット翻訳）
   - `src/components/ConditionMatcher.tsx`（軸6）
-- [ ] 4.4 共通レイアウト `src/layouts/Base.astro`
-- [ ] 4.5 スタイリング（Tailwind ユーティリティで実装、共通トークンは `tailwind.config.mjs`）
-- [ ] 4.6 Lighthouse 計測（Performance 90+, A11y 95+）
+- [x] 4.4 共通レイアウト `src/layouts/Base.astro`（skip-to-content、ヘッダー/フッター）
+- [x] 4.5 スタイリング（Tailwind v4 + `src/styles/global.css` の `@theme` トークン）
+- [x] 4.6 Lighthouse 計測（Performance 100 / Accessibility 100 を NA-LX129DL で達成、2026-04-24）
 
-**完了条件**: 5 機種すべての詳細ページが実データで正しく表示
+**完了条件**: 5 機種すべての詳細ページが実データで正しく表示 ✅（2026-04-24 検証済み）
 
 ## 5. デプロイ
 

@@ -49,6 +49,31 @@ import { calculateRoi } from "./roi";
 - デザイントークン（色・スペーシング・フォント）は `src/styles/global.css` の `@theme` ブロックに集約。任意値 `[#abc]` は原則禁止
 - ダークモード対応は `@variant dark (&:where(.dark, .dark *))` の予定（Phase 1 では切替 UI 非実装）
 
+### カラートークン（Phase 1 暫定）
+
+ブランドカラーは Phase 2 以降で確定するため、Phase 1 は Tailwind 既定パレット（`blue` / `slate` / `emerald` / `amber` / `red`）を直接利用し、セマンティック名が欲しい箇所のみ `@theme` にエイリアスを追加する。
+
+| トークン | 用途 | 初期値（Phase 1） |
+|---|---|---|
+| `--color-primary` | 強調（買い時シグナル、CTA） | Tailwind `blue-600` |
+| `--color-primary-soft` | 強調の背景（バッジ） | Tailwind `blue-50` |
+| `--color-surface` | カード背景 | `#ffffff` |
+| `--color-surface-muted` | セクション背景 | Tailwind `slate-50` |
+| `--color-border` | 区切り線 | Tailwind `slate-200` |
+| `--color-text-muted` | 補助テキスト | Tailwind `slate-500` |
+| `--color-success` | 推奨（ROI `recommend`） | Tailwind `emerald-600` |
+| `--color-warning` | 保留（`depends-on-lifespan` / `wait-until-breakdown`） | Tailwind `amber-600` |
+| `--color-danger` | 非推奨（`no-benefit`、削除差分） | Tailwind `red-600` |
+
+verdict → 色のマッピングは `src/lib/constants.ts` ではなく UI 側（コンポーネント or テーブル）に閉じる（logic と視覚表現の責務分離）。
+
+### 画像プレースホルダ
+
+- `imageUrl` に対応する実ファイルが無い場合、`src/components/ModelImage.astro` が inline SVG で代替を描画する
+- プレースホルダの色相はブランドごとに固定で `BRAND_HUE_DEGREES`（`src/lib/constants.ts`）から引く。新ブランド追加時は constants へ登録する（ハードコード禁止ルール遵守）
+- 頭文字は `modelName` または `modelNumber` の先頭文字
+- Phase 2 でメーカー公式画像に差し替える（URL は `externalIds` 経由で取得予定）
+
 ## エラーハンドリング
 
 - ユーザー入力・外部 API は **zod でバリデーション**
