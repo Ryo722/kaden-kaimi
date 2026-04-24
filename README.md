@@ -2,6 +2,8 @@
 
 家電の購入タイミングを判断するダッシュボードサイト。
 
+本番: <https://kaden-kaimi.pages.dev/>
+
 ## プロダクトの要点
 
 「今・この機種を買うべきか」を以下5軸で一枚に可視化する:
@@ -45,15 +47,15 @@
 
 ## 現在のステータス（2026-04-24）
 
-**Phase 1 (MVP) 進行中** — 3/5 タスク完了
+**Phase 1 (MVP) 進行中** — 4/5 タスク完了、タスク 5 着手中
 
 - ✅ タスク 1: プロジェクト初期化（Astro + Tailwind + Cloudflare adapter）
 - ✅ タスク 2: 型定義（zod）・サンプルデータ（5 機種 × 30 日）
-- ✅ タスク 3: 5 軸ロジック実装（全軸 TDD、100 tests、カバレッジ 97%）
-- ⏳ **タスク 4: 機種詳細ページ（次のセッションで着手）**
-- ⬜ タスク 5: Cloudflare Pages デプロイ
+- ✅ タスク 3: 5 軸ロジック実装（全軸 TDD、133 tests、カバレッジ 97%）
+- ✅ タスク 4: 機種詳細ページ（5 軸ダッシュボード、Lighthouse P100/A100）
+- ⏳ **タスク 5: Cloudflare Pages デプロイ + Lighthouse CI**
 
-次セッションの引き継ぎ: [`docs/handoffs/task-4.md`](./docs/handoffs/task-4.md)
+次セッションの引き継ぎ: [`docs/handoffs/task-5.md`](./docs/handoffs/task-5.md)
 
 ## セットアップ
 
