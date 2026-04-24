@@ -59,6 +59,10 @@
 
 ## セットアップ
 
+**必要環境**
+- Node.js 22.12.0（`.nvmrc` 準拠、Astro 6 の下限）
+- pnpm 10.32.1（`packageManager` で固定）
+
 ```bash
 pnpm install
 pnpm dev              # 開発サーバー起動
@@ -68,7 +72,10 @@ pnpm test             # Vitest
 pnpm test:coverage    # カバレッジ測定（src/lib は 80% 閾値）
 pnpm lint             # ESLint（flat config）
 pnpm validate         # data/ JSON スキーマ検証
+pnpm exec lhci autorun  # Lighthouse CI（要: pnpm build 済み）
 ```
+
+> **Lighthouse CI メモ**: `.lighthouserc.json` の `skipAudits: ["uses-http2"]` は lhci 内蔵 server が HTTP/1.1 のみのため。Phase 2 で本番/プレビュー URL 計測に切り替える際は削除すること。
 
 ## ディレクトリ構成
 
