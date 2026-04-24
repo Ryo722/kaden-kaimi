@@ -14,6 +14,7 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html", "json-summary"],
       include: ["src/lib/**/*.ts"],
+      exclude: ["src/lib/**/*.test.ts", "src/lib/testing.ts"],
       thresholds: {
         lines: 80,
         functions: 80,

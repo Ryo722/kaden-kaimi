@@ -40,18 +40,18 @@ Phase 1 の完了条件は `ROADMAP.md` の「Phase 1 成功指標」を参照�
 
 各軸は `docs/logic-specs.md` の仕様に従う。
 
-- [ ] 3.1 `src/lib/constants.ts` — 閾値・パラメータ集約
-- [ ] 3.2 `src/lib/models.ts` — 機種データ読み込み
-- [ ] 3.3 `src/lib/prices.ts` — 価格時系列読み込み
-- [ ] 3.4 `src/lib/similarity.ts` — 軸1: 同等代替候補抽出
-- [ ] 3.5 `src/lib/roi.ts` — 軸2: ROI 計算
-- [ ] 3.6 `src/lib/cycle.ts` — 軸3: モデルチェンジ周期予測
-- [ ] 3.7 `src/lib/diff.ts` — 軸5: 世代差分抽出
-- [ ] 3.8 `src/lib/matcher.ts` — 軸6: 条件マッチング
-- [ ] 3.9 各 lib に対応する `*.test.ts` 追加（正常・境界・異常）
-- [ ] 3.10 `pnpm test` でカバレッジ 80%+ 確認
+- [x] 3.1 `src/lib/constants.ts` — 閾値・パラメータ集約
+- [x] 3.2 `src/lib/models.ts` — 機種データ読み込み
+- [x] 3.3 `src/lib/prices.ts` — 価格時系列読み込み
+- [x] 3.4 `src/lib/similarity.ts` — 軸1: 同等代替候補抽出
+- [x] 3.5 `src/lib/roi.ts` — 軸2: ROI 計算
+- [x] 3.6 `src/lib/cycle.ts` — 軸3: モデルチェンジ周期予測
+- [x] 3.7 `src/lib/diff.ts` — 軸5: 世代差分抽出
+- [x] 3.8 `src/lib/matcher.ts` — 軸6: 条件マッチング
+- [x] 3.9 各 lib に対応する `*.test.ts` 追加（正常・境界・異常、97 ケース）
+- [x] 3.10 `pnpm test:coverage` で `src/lib/**` カバレッジ 97%+ 確認
 
-**完了条件**: 全軸のユニットテストカバレッジ 80%+、全テストパス
+**完了条件**: 全軸のユニットテストカバレッジ 80%+、全テストパス ✅（2026-04-24 検証済み、stmts 97.27% / branches 89.65% / funcs 98.27% / lines 97.7%）
 
 ## 4. 機種詳細ページ
 
