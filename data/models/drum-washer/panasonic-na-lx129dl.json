@@ -1,0 +1,36 @@
+{
+  "id": "panasonic-na-lx129dl",
+  "brand": "panasonic",
+  "modelName": "キューブル NA-LX129DL",
+  "modelNumber": "NA-LX129DL",
+  "category": "drum-washer",
+  "generation": 2024,
+  "announcementDate": "2024-07-15",
+  "releaseDate": "2024-09-20",
+  "msrp": 374000,
+  "discontinued": false,
+  "predecessorId": "panasonic-na-lx127dl",
+  "successorId": null,
+  "specs": {
+    "washCapacityKg": 12,
+    "dryCapacityKg": 6,
+    "annualKwh": 185,
+    "waterPerCycleL": 78,
+    "widthMm": 604,
+    "heightMm": 1021,
+    "depthMm": 722,
+    "weightKg": 81,
+    "features": [
+      "heat-pump",
+      "auto-detergent",
+      "smart-app",
+      "quiet-mode",
+      "panasonic:nanoe-x"
+    ]
+  },
+  "externalIds": {
+    "rakutenItemCode": null,
+    "yahooItemCode": null
+  },
+  "imageUrl": "/images/models/panasonic-na-lx129dl.webp"
+}

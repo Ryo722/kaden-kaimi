@@ -15,7 +15,9 @@
     "test:coverage": "vitest run --coverage",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "validate": "tsx scripts/validate-data.ts",
+    "generate:sample-prices": "tsx scripts/generate-sample-prices.ts"
   },
   "engines": {
     "node": ">=20.0.0"

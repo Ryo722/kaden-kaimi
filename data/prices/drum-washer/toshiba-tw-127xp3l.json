@@ -1,0 +1,215 @@
+{
+  "modelId": "toshiba-tw-127xp3l",
+  "history": [
+    {
+      "date": "2026-03-26",
+      "rakutenMin": 313650,
+      "rakutenAvg": 326196,
+      "yahooMin": 319923,
+      "yahooAvg": 335919
+    },
+    {
+      "date": "2026-03-27",
+      "rakutenMin": 314730,
+      "rakutenAvg": 327319,
+      "yahooMin": 321025,
+      "yahooAvg": 337076
+    },
+    {
+      "date": "2026-03-28",
+      "rakutenMin": 314859,
+      "rakutenAvg": 327453,
+      "yahooMin": 321156,
+      "yahooAvg": 337214
+    },
+    {
+      "date": "2026-03-29",
+      "rakutenMin": 313535,
+      "rakutenAvg": 326076,
+      "yahooMin": 319806,
+      "yahooAvg": 335796
+    },
+    {
+      "date": "2026-03-30",
+      "rakutenMin": 310937,
+      "rakutenAvg": 323374,
+      "yahooMin": 317156,
+      "yahooAvg": 333014
+    },
+    {
+      "date": "2026-03-31",
+      "rakutenMin": 307845,
+      "rakutenAvg": 320159,
+      "yahooMin": 314002,
+      "yahooAvg": 329702
+    },
+    {
+      "date": "2026-04-01",
+      "rakutenMin": 305271,
+      "rakutenAvg": 317482,
+      "yahooMin": 311376,
+      "yahooAvg": 326945
+    },
+    {
+      "date": "2026-04-02",
+      "rakutenMin": 303982,
+      "rakutenAvg": 316141,
+      "yahooMin": 310062,
+      "yahooAvg": 325565
+    },
+    {
+      "date": "2026-04-03",
+      "rakutenMin": 304142,
+      "rakutenAvg": 316308,
+      "yahooMin": 310225,
+      "yahooAvg": 325736
+    },
+    {
+      "date": "2026-04-04",
+      "rakutenMin": 305234,
+      "rakutenAvg": 317443,
+      "yahooMin": 311339,
+      "yahooAvg": 326906
+    },
+    {
+      "date": "2026-04-05",
+      "rakutenMin": 306301,
+      "rakutenAvg": 318553,
+      "yahooMin": 312427,
+      "yahooAvg": 328048
+    },
+    {
+      "date": "2026-04-06",
+      "rakutenMin": 306399,
+      "rakutenAvg": 318655,
+      "yahooMin": 312527,
+      "yahooAvg": 328153
+    },
+    {
+      "date": "2026-04-07",
+      "rakutenMin": 305039,
+      "rakutenAvg": 317241,
+      "yahooMin": 311140,
+      "yahooAvg": 326697
+    },
+    {
+      "date": "2026-04-08",
+      "rakutenMin": 302419,
+      "rakutenAvg": 314516,
+      "yahooMin": 308467,
+      "yahooAvg": 323890
+    },
+    {
+      "date": "2026-04-09",
+      "rakutenMin": 299327,
+      "rakutenAvg": 311300,
+      "yahooMin": 305314,
+      "yahooAvg": 320580
+    },
+    {
+      "date": "2026-04-10",
+      "rakutenMin": 296777,
+      "rakutenAvg": 308648,
+      "yahooMin": 302713,
+      "yahooAvg": 317849
+    },
+    {
+      "date": "2026-04-11",
+      "rakutenMin": 295524,
+      "rakutenAvg": 307345,
+      "yahooMin": 301434,
+      "yahooAvg": 316506
+    },
+    {
+      "date": "2026-04-12",
+      "rakutenMin": 295715,
+      "rakutenAvg": 307544,
+      "yahooMin": 301629,
+      "yahooAvg": 316710
+    },
+    {
+      "date": "2026-04-13",
+      "rakutenMin": 296818,
+      "rakutenAvg": 308691,
+      "yahooMin": 302754,
+      "yahooAvg": 317892
+    },
+    {
+      "date": "2026-04-14",
+      "rakutenMin": 297872,
+      "rakutenAvg": 309787,
+      "yahooMin": 303829,
+      "yahooAvg": 319020
+    },
+    {
+      "date": "2026-04-15",
+      "rakutenMin": 297938,
+      "rakutenAvg": 309856,
+      "yahooMin": 303897,
+      "yahooAvg": 319092
+    },
+    {
+      "date": "2026-04-16",
+      "rakutenMin": 296543,
+      "rakutenAvg": 308405,
+      "yahooMin": 302474,
+      "yahooAvg": 317598
+    },
+    {
+      "date": "2026-04-17",
+      "rakutenMin": 293900,
+      "rakutenAvg": 305656,
+      "yahooMin": 299778,
+      "yahooAvg": 314767
+    },
+    {
+      "date": "2026-04-18",
+      "rakutenMin": 290810,
+      "rakutenAvg": 302442,
+      "yahooMin": 296626,
+      "yahooAvg": 311457
+    },
+    {
+      "date": "2026-04-19",
+      "rakutenMin": 288283,
+      "rakutenAvg": 299814,
+      "yahooMin": 294049,
+      "yahooAvg": 308751
+    },
+    {
+      "date": "2026-04-20",
+      "rakutenMin": 287066,
+      "rakutenAvg": 298549,
+      "yahooMin": 292807,
+      "yahooAvg": 307447
+    },
+    {
+      "date": "2026-04-21",
+      "rakutenMin": 287288,
+      "rakutenAvg": 298780,
+      "yahooMin": 293034,
+      "yahooAvg": 307686
+    },
+    {
+      "date": "2026-04-22",
+      "rakutenMin": 288403,
+      "rakutenAvg": 299939,
+      "yahooMin": 294171,
+      "yahooAvg": 308880
+    },
+    {
+      "date": "2026-04-23",
+      "rakutenMin": 289442,
+      "rakutenAvg": 301020,
+      "yahooMin": 295231,
+      "yahooAvg": 309993
+    },
+    {
+      "date": "2026-04-24",
+      "rakutenMin": 289476,
+      "rakutenAvg": 301055,
+      "yahooMin": 295266,
+      "yahooAvg": 310029
+    }
+  ]
+}

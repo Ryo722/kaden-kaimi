@@ -1,0 +1,7 @@
+{
+  "updatedAt": "2026-04-01",
+  "electricityYenPerKwh": 31,
+  "waterYenPerL": 0.15,
+  "sewerageYenPerL": 0.15,
+  "note": "全国平均の目安（2026年度）。電気代は従量電灯B第二段階相当、水道・下水道は一般家庭20m3/月の平均単価。地域差が大きいため UI で調整可能にする予定。"
+}

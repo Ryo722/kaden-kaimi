@@ -1,0 +1,32 @@
+[
+  {
+    "id": "panasonic",
+    "displayName": "パナソニック",
+    "country": "Japan",
+    "websiteUrl": "https://panasonic.jp/wash/"
+  },
+  {
+    "id": "hitachi",
+    "displayName": "日立",
+    "country": "Japan",
+    "websiteUrl": "https://kadenfan.hitachi.co.jp/wash/"
+  },
+  {
+    "id": "toshiba",
+    "displayName": "東芝",
+    "country": "Japan",
+    "websiteUrl": "https://www.toshiba-lifestyle.com/jp/washer/"
+  },
+  {
+    "id": "sharp",
+    "displayName": "シャープ",
+    "country": "Japan",
+    "websiteUrl": "https://jp.sharp/sentaku/"
+  },
+  {
+    "id": "aqua",
+    "displayName": "AQUA",
+    "country": "Japan",
+    "websiteUrl": "https://aqua-has.com/washer/"
+  }
+]

@@ -1,0 +1,35 @@
+{
+  "id": "panasonic-na-lx127dl",
+  "brand": "panasonic",
+  "modelName": "キューブル NA-LX127DL",
+  "modelNumber": "NA-LX127DL",
+  "category": "drum-washer",
+  "generation": 2023,
+  "announcementDate": "2023-07-20",
+  "releaseDate": "2023-09-15",
+  "msrp": 358000,
+  "discontinued": false,
+  "predecessorId": null,
+  "successorId": "panasonic-na-lx129dl",
+  "specs": {
+    "washCapacityKg": 12,
+    "dryCapacityKg": 6,
+    "annualKwh": 195,
+    "waterPerCycleL": 82,
+    "widthMm": 604,
+    "heightMm": 1021,
+    "depthMm": 722,
+    "weightKg": 80,
+    "features": [
+      "heat-pump",
+      "auto-detergent",
+      "smart-app",
+      "panasonic:nanoe-x"
+    ]
+  },
+  "externalIds": {
+    "rakutenItemCode": null,
+    "yahooItemCode": null
+  },
+  "imageUrl": "/images/models/panasonic-na-lx127dl.webp"
+}

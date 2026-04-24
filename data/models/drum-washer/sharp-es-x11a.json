@@ -1,0 +1,35 @@
+{
+  "id": "sharp-es-x11a",
+  "brand": "sharp",
+  "modelName": "ES-X11A",
+  "modelNumber": "ES-X11A",
+  "category": "drum-washer",
+  "generation": 2024,
+  "announcementDate": "2024-06-10",
+  "releaseDate": "2024-08-25",
+  "msrp": 345000,
+  "discontinued": false,
+  "predecessorId": null,
+  "successorId": null,
+  "specs": {
+    "washCapacityKg": 11,
+    "dryCapacityKg": 6,
+    "annualKwh": 190,
+    "waterPerCycleL": 75,
+    "widthMm": 640,
+    "heightMm": 1045,
+    "depthMm": 728,
+    "weightKg": 76,
+    "features": [
+      "heat-pump",
+      "auto-detergent",
+      "smart-app",
+      "sharp:plasmacluster"
+    ]
+  },
+  "externalIds": {
+    "rakutenItemCode": null,
+    "yahooItemCode": null
+  },
+  "imageUrl": "/images/models/sharp-es-x11a.webp"
+}

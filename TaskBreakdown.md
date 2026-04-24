@@ -18,21 +18,23 @@ Phase 1 の完了条件は `ROADMAP.md` の「Phase 1 成功指標」を参照�
 
 ## 2. 型定義・サンプルデータ
 
-- [ ] 2.1 `src/types/schema.ts` に zod スキーマ定義
-  - `ModelSchema`, `PriceHistorySchema`, `EnergyRatesSchema`, `BrandSchema`
-- [ ] 2.2 `src/types/index.ts` に型エクスポート
-- [ ] 2.3 サンプル機種マスタ作成（ドラム式洗濯機 5 機種）
-  - パナソニック NA-LX129DL / NA-LX127DL（前世代）
+- [x] 2.1 `src/types/schema.ts` に zod スキーマ定義
+  - `ModelSchema`, `PriceHistorySchema`, `EnergyRatesSchema`, `BrandSchema`（全て `.strict()` で未知キー拒否）
+  - features タグパターン、日付順序、ID 参照整合性を `refine`/`superRefine` で強制
+- [x] 2.2 `src/types/index.ts` に型エクスポート
+- [x] 2.3 サンプル機種マスタ作成（ドラム式洗濯機 5 機種）
+  - パナソニック NA-LX129DL / NA-LX127DL（前世代、相互参照済み）
   - 日立 BD-SX120HL
   - 東芝 TW-127XP3L
   - シャープ ES-X11A
-- [ ] 2.4 サンプル価格履歴作成（各機種 30 日分、手動）
-- [ ] 2.5 `data/energy-rates.json` 作成
-- [ ] 2.6 `data/brands.json` 作成
-- [ ] 2.7 `scripts/validate-data.ts` でスキーマ検証 CLI
-- [ ] 2.8 `pnpm validate` npm スクリプト追加
+- [x] 2.4 サンプル価格履歴作成（各機種 30 日分、`scripts/generate-sample-prices.ts` で生成）
+- [x] 2.5 `data/energy-rates.json` 作成
+- [x] 2.6 `data/brands.json` 作成
+- [x] 2.7 `scripts/validate-data.ts` でスキーマ検証 CLI（ファイル名/ディレクトリ整合、前後世代の相互参照チェック込み）
+- [x] 2.8 `pnpm validate` / `pnpm generate:sample-prices` npm スクリプト追加
+- [x] 2.9 `src/types/schema.test.ts` 追加（正常/境界/異常 14 ケース）
 
-**完了条件**: `pnpm validate` が全 JSON に対して pass
+**完了条件**: `pnpm validate` が全 JSON に対して pass ✅（2026-04-24 検証済み、5 models OK）
 
 ## 3. 5軸ロジック実装
 

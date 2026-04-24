@@ -1,0 +1,35 @@
+{
+  "id": "hitachi-bd-sx120hl",
+  "brand": "hitachi",
+  "modelName": "ビッグドラム BD-SX120HL",
+  "modelNumber": "BD-SX120HL",
+  "category": "drum-washer",
+  "generation": 2024,
+  "announcementDate": "2024-08-01",
+  "releaseDate": "2024-10-25",
+  "msrp": 385000,
+  "discontinued": false,
+  "predecessorId": null,
+  "successorId": null,
+  "specs": {
+    "washCapacityKg": 12,
+    "dryCapacityKg": 7,
+    "annualKwh": 200,
+    "waterPerCycleL": 80,
+    "widthMm": 630,
+    "heightMm": 1065,
+    "depthMm": 715,
+    "weightKg": 83,
+    "features": [
+      "heat-pump",
+      "auto-detergent",
+      "smart-app",
+      "hitachi:wind-iron"
+    ]
+  },
+  "externalIds": {
+    "rakutenItemCode": null,
+    "yahooItemCode": null
+  },
+  "imageUrl": "/images/models/hitachi-bd-sx120hl.webp"
+}
