@@ -17,7 +17,26 @@ const { title, description = "家電買い替え意思決定ダッシュボー�
     <meta name="description" content={description} />
     <title>{title}</title>
   </head>
-  <body class="min-h-screen bg-white font-sans text-neutral-900 antialiased">
+  <body class="min-h-screen bg-[var(--color-surface-muted)] font-sans text-neutral-900 antialiased">
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-[var(--color-primary)] focus:px-3 focus:py-2 focus:text-sm focus:font-medium focus:text-white"
+    >
+      本文へスキップ
+    </a>
+    <header class="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
+      <div class="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
+        <a href="/" class="text-sm font-semibold tracking-tight text-neutral-900 hover:text-[var(--color-primary)]">
+          家電買い時
+        </a>
+        <span class="text-xs text-[var(--color-text-muted)]">Phase 1 (MVP)</span>
+      </div>
+    </header>
     <slot />
+    <footer class="mt-16 border-t border-[var(--color-border)] bg-[var(--color-surface)]">
+      <div class="mx-auto max-w-5xl px-6 py-6 text-xs text-[var(--color-text-muted)]">
+        © 2026 家電買い時 — 参考価格・スペックは各メーカー・販売店の公開情報に基づく。購入前に最新情報をご確認ください。
+      </div>
+    </footer>
   </body>
 </html>

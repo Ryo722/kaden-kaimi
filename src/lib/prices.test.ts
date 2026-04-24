@@ -4,6 +4,8 @@ import type { PriceRecord } from "@/types";
 
 import {
   averageField,
+  getDisplayPrice,
+  getInternalPrice,
   getLatestRecord,
   loadPriceHistory,
 } from "./prices";
@@ -91,5 +93,81 @@ describe("averageField", () => {
         end: "2026-05-31",
       }),
     ).toBeNull();
+  });
+});
+
+describe("getDisplayPrice", () => {
+  it("returns the minimum of rakutenMin and yahooMin", () => {
+    const record: PriceRecord = {
+      date: "2026-04-24",
+      rakutenMin: 298000,
+      rakutenAvg: 310000,
+      yahooMin: 301800,
+      yahooAvg: 318200,
+    };
+    expect(getDisplayPrice(record)).toBe(298000);
+  });
+
+  it("falls back to whichever minimum is non-null", () => {
+    const onlyYahoo: PriceRecord = {
+      date: "2026-04-24",
+      rakutenMin: null,
+      rakutenAvg: null,
+      yahooMin: 305000,
+      yahooAvg: 320000,
+    };
+    expect(getDisplayPrice(onlyYahoo)).toBe(305000);
+
+    const onlyRakuten: PriceRecord = {
+      date: "2026-04-24",
+      rakutenMin: 299000,
+      rakutenAvg: 310000,
+      yahooMin: null,
+      yahooAvg: null,
+    };
+    expect(getDisplayPrice(onlyRakuten)).toBe(299000);
+  });
+
+  it("returns null when both minimums are null", () => {
+    const allAvgOnly: PriceRecord = {
+      date: "2026-04-24",
+      rakutenMin: null,
+      rakutenAvg: 310000,
+      yahooMin: null,
+      yahooAvg: 320000,
+    };
+    expect(getDisplayPrice(allAvgOnly)).toBeNull();
+  });
+
+  it("returns null when the record itself is null", () => {
+    expect(getDisplayPrice(null)).toBeNull();
+  });
+});
+
+describe("getInternalPrice", () => {
+  it("returns rakutenAvg", () => {
+    const record: PriceRecord = {
+      date: "2026-04-24",
+      rakutenMin: 298000,
+      rakutenAvg: 310000,
+      yahooMin: 301800,
+      yahooAvg: 318200,
+    };
+    expect(getInternalPrice(record)).toBe(310000);
+  });
+
+  it("returns null when rakutenAvg is null", () => {
+    const record: PriceRecord = {
+      date: "2026-04-24",
+      rakutenMin: 298000,
+      rakutenAvg: null,
+      yahooMin: 301800,
+      yahooAvg: 318200,
+    };
+    expect(getInternalPrice(record)).toBeNull();
+  });
+
+  it("returns null when the record itself is null", () => {
+    expect(getInternalPrice(null)).toBeNull();
   });
 });

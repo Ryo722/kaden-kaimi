@@ -43,3 +43,17 @@ export function averageField(
   const sum = values.reduce((a, b) => a + b, 0);
   return sum / values.length;
 }
+
+export function getDisplayPrice(record: PriceRecord | null): number | null {
+  if (record === null) return null;
+  const mins: number[] = [];
+  if (record.rakutenMin !== null) mins.push(record.rakutenMin);
+  if (record.yahooMin !== null) mins.push(record.yahooMin);
+  if (mins.length === 0) return null;
+  return Math.min(...mins);
+}
+
+export function getInternalPrice(record: PriceRecord | null): number | null {
+  if (record === null) return null;
+  return record.rakutenAvg;
+}

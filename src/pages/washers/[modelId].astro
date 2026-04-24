@@ -1,0 +1,173 @@
+---
+export const prerender = true;
+
+import type { GetStaticPaths } from "astro";
+
+import Base from "@/layouts/Base.astro";
+import AlternativeModels from "@/components/AlternativeModels.astro";
+import BuyTimingSignal from "@/components/BuyTimingSignal.astro";
+import ConditionMatcher from "@/components/ConditionMatcher";
+import GenerationDiff from "@/components/GenerationDiff.astro";
+import ModelImage from "@/components/ModelImage.astro";
+import RoiCalculator from "@/components/RoiCalculator";
+import { formatIsoDate, formatYen } from "@/lib/format";
+import { loadWasherPagesData, type WasherPageData } from "@/lib/page-data";
+
+export const getStaticPaths = (() => {
+  const pages = loadWasherPagesData("drum-washer");
+  return pages.map((page) => ({
+    params: { modelId: page.model.id },
+    props: { page },
+  }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  page: WasherPageData;
+}
+
+const { page } = Astro.props;
+const {
+  model,
+  allModels,
+  brandLabel,
+  displayPrice,
+  internalPrice,
+  cycleResult,
+  alternatives,
+  predecessor,
+  generationDiff,
+  currentPricesById,
+  energyRates,
+} = page;
+
+const msrpDelta = displayPrice === null ? null : displayPrice - model.msrp;
+const msrpDeltaRatio =
+  msrpDelta === null ? null : msrpDelta / model.msrp;
+---
+
+<Base
+  title={`${model.modelName} — 家電買い時`}
+  description={`${brandLabel} ${model.modelName} の買い時判定ダッシュボード`}
+>
+  <main id="main" class="mx-auto max-w-5xl px-6 py-10">
+    <nav class="text-xs text-[var(--color-text-muted)]">
+      <a href="/" class="hover:text-[var(--color-primary)]">ホーム</a>
+      <span class="mx-1">/</span>
+      <span>ドラム式洗濯機</span>
+      <span class="mx-1">/</span>
+      <span class="text-neutral-700">{model.modelNumber}</span>
+    </nav>
+
+    <section class="mt-6 grid gap-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-sm md:grid-cols-[320px_1fr]">
+      <ModelImage brand={model.brand} modelName={model.modelNumber} class="aspect-[4/3]" />
+      <div>
+        <p class="text-xs font-medium tracking-wide text-[var(--color-primary)] uppercase">
+          {brandLabel} · {model.generation} 年モデル
+        </p>
+        <h1 class="mt-1 text-3xl font-bold tracking-tight text-neutral-900">
+          {model.modelName}
+        </h1>
+        <p class="mt-1 text-sm text-[var(--color-text-muted)]">
+          型番 {model.modelNumber}
+        </p>
+
+        <dl class="mt-6 grid grid-cols-2 gap-x-6 gap-y-4 text-sm">
+          <div>
+            <dt class="text-[var(--color-text-muted)]">現在価格（最安）</dt>
+            <dd class="mt-1 text-2xl font-semibold text-neutral-900">
+              {formatYen(displayPrice)}
+              {
+                msrpDelta !== null && msrpDeltaRatio !== null && (
+                  <span
+                    class:list={[
+                      "mt-1 block text-xs font-normal",
+                      msrpDelta < 0
+                        ? "text-[var(--color-success)]"
+                        : "text-[var(--color-text-muted)]",
+                    ]}
+                  >
+                    希望小売比 {msrpDelta >= 0 ? "+" : ""}
+                    {formatYen(msrpDelta)} ({(msrpDeltaRatio * 100).toFixed(1)}%)
+                  </span>
+                )
+              }
+            </dd>
+          </div>
+          <div>
+            <dt class="text-[var(--color-text-muted)]">希望小売価格</dt>
+            <dd class="mt-1 text-2xl font-semibold text-neutral-900">
+              {formatYen(model.msrp)}
+              <span class="mt-1 block text-xs font-normal text-[var(--color-text-muted)]">
+                楽天平均 {formatYen(internalPrice)}
+              </span>
+            </dd>
+          </div>
+          <div>
+            <dt class="text-[var(--color-text-muted)]">発表日</dt>
+            <dd class="mt-1 font-medium text-neutral-900">
+              {formatIsoDate(model.announcementDate)}
+            </dd>
+          </div>
+          <div>
+            <dt class="text-[var(--color-text-muted)]">発売日</dt>
+            <dd class="mt-1 font-medium text-neutral-900">
+              {formatIsoDate(model.releaseDate)}
+            </dd>
+          </div>
+          <div>
+            <dt class="text-[var(--color-text-muted)]">洗濯 / 乾燥容量</dt>
+            <dd class="mt-1 font-medium text-neutral-900">
+              {model.specs.washCapacityKg}kg / {model.specs.dryCapacityKg}kg
+            </dd>
+          </div>
+          <div>
+            <dt class="text-[var(--color-text-muted)]">寸法 (W×H×D)</dt>
+            <dd class="mt-1 font-medium text-neutral-900">
+              {model.specs.widthMm} × {model.specs.heightMm} × {model.specs.depthMm} mm
+            </dd>
+          </div>
+        </dl>
+
+        {
+          model.specs.features.length > 0 && (
+            <ul class="mt-5 flex flex-wrap gap-2">
+              {model.specs.features.map((feature) => (
+                <li class="rounded-full bg-[var(--color-primary-soft)] px-3 py-1 text-xs font-medium text-[var(--color-primary-ink)]">
+                  {feature}
+                </li>
+              ))}
+            </ul>
+          )
+        }
+      </div>
+    </section>
+
+    <BuyTimingSignal result={cycleResult} currentPrice={internalPrice} />
+
+    <AlternativeModels
+      target={{ id: model.id, modelName: model.modelName, msrp: model.msrp }}
+      alternatives={alternatives}
+    />
+
+    <GenerationDiff
+      target={model}
+      predecessor={predecessor}
+      diff={generationDiff}
+    />
+
+    <RoiCalculator
+      client:visible
+      nextModel={model}
+      nextPriceYen={displayPrice ?? model.msrp}
+      rates={energyRates}
+    />
+
+    <ConditionMatcher
+      client:visible
+      candidates={allModels}
+      currentPricesById={currentPricesById}
+      rates={energyRates}
+      currentModelId={model.id}
+    />
+  </main>
+</Base>

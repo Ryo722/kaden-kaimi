@@ -31,3 +31,6 @@ coverage/
 
 # Astro
 .astro/
+
+# Playwright MCP snapshots
+.playwright-mcp/

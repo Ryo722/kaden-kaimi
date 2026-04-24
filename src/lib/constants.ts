@@ -1,3 +1,20 @@
+import type { BrandId } from "@/types";
+
+export const BRAND_HUE_DEGREES: Record<BrandId, number> = {
+  panasonic: 210,
+  hitachi: 15,
+  toshiba: 265,
+  sharp: 150,
+  aqua: 190,
+};
+
+export const AXIS6_FEATURE_LABELS: Record<string, string> = {
+  "heat-pump": "ヒートポンプ乾燥",
+  "auto-detergent": "洗剤自動投入",
+  "smart-app": "スマホ連携",
+  "quiet-mode": "静音モード",
+};
+
 export const AXIS1_CAPACITY_DELTA_MAX_KG = 1;
 export const AXIS1_CORE_FEATURES = ["heat-pump"] as const;
 export const AXIS1_CORE_DRY_CAPACITY_MIN_KG = 3;
@@ -10,6 +27,33 @@ export const AXIS2_DEFAULT_WEEKLY_USES = 7;
 export const AXIS2_PAYBACK_RECOMMEND_MAX_YEARS = 5;
 export const AXIS2_PAYBACK_DEPENDS_MAX_YEARS = 8;
 export const AXIS2_PAYBACK_WAIT_MAX_YEARS = 12;
+
+export type FailureRiskTier = {
+  maxAgeYears: number;
+  annualProbability: number;
+  avgRepairCostYen: number;
+};
+
+export const AXIS2_FAILURE_RISK_TABLE: readonly FailureRiskTier[] = [
+  { maxAgeYears: 4, annualProbability: 0.01, avgRepairCostYen: 20000 },
+  { maxAgeYears: 7, annualProbability: 0.04, avgRepairCostYen: 30000 },
+  { maxAgeYears: 10, annualProbability: 0.1, avgRepairCostYen: 40000 },
+  { maxAgeYears: 13, annualProbability: 0.18, avgRepairCostYen: 50000 },
+  { maxAgeYears: Infinity, annualProbability: 0.28, avgRepairCostYen: 60000 },
+];
+
+export const AXIS2_DETERGENT_FEATURE = "auto-detergent" as const;
+export const AXIS2_DETERGENT_ANNUAL_SAVING_YEN = 3000;
+
+export const AXIS2_FEATURE_VALUE_PROPS: Record<string, string> = {
+  "heat-pump":
+    "ヒートポンプ乾燥で衣類ダメージと乾燥時の電気代を両立で削減",
+  "auto-detergent":
+    "洗剤自動投入で計量の手間が不要。投入量の最適化で洗剤コストも抑制",
+  "smart-app":
+    "アプリで予約・通知が可能。深夜電力帯でのタイマー運用が実用的",
+  "quiet-mode": "静音モードで夜間・早朝の運転でも家族や近隣への音配慮がしやすい",
+};
 
 export const AXIS3_WINDOW_DAYS = 30;
 export const AXIS3_PRICE_FIELD = "rakutenAvg" as const;

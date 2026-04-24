@@ -1,0 +1,107 @@
+---
+import type { Alternative } from "@/lib/similarity";
+import { formatYen } from "@/lib/format";
+
+interface Props {
+  target: { id: string; modelName: string; msrp: number };
+  alternatives: Array<
+    Alternative & {
+      brandLabel: string;
+      currentPrice: number | null;
+    }
+  >;
+}
+
+const { target, alternatives } = Astro.props;
+
+function describeAlternative(alt: Props["alternatives"][number]): string {
+  const parts: string[] = [];
+  if (alt.priceDiff < 0) {
+    const pct = Math.round((alt.priceDiffNormalized * 100) * 10) / 10;
+    parts.push(`希望小売で ${pct}% 安い`);
+  } else if (alt.priceDiff > 0) {
+    parts.push("希望小売では高いが性能重視");
+  } else {
+    parts.push("希望小売は同等");
+  }
+  const featurePct = Math.round(alt.featureMatchRatio * 100);
+  parts.push(`機能一致率 ${featurePct}%`);
+  return parts.join(" / ");
+}
+---
+
+<section
+  aria-labelledby="alternatives-heading"
+  class="mt-8 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-sm"
+>
+  <h2 id="alternatives-heading" class="text-lg font-semibold tracking-tight">
+    同等代替候補（軸1）
+  </h2>
+  <p class="mt-2 text-sm text-[var(--color-text-muted)]">
+    容量 ±1kg / ヒートポンプ乾燥 / 乾燥容量 3kg 超の条件で、{target.modelName}
+    と同等スペックの機種をスコア降順で最大 3 件表示しています。
+  </p>
+
+  {
+    alternatives.length === 0 ? (
+      <div class="mt-5 rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-surface-muted)] p-4 text-sm text-[var(--color-text-muted)]">
+        <p>条件を満たす代替候補が見つかりませんでした。</p>
+      </div>
+    ) : (
+      <ol class="mt-5 grid gap-4 md:grid-cols-3">
+        {alternatives.map((alt, index) => {
+          const displayPrice = alt.currentPrice ?? alt.model.msrp;
+          const priceLabel =
+            alt.currentPrice === null ? "希望小売" : "現在価格";
+          return (
+            <li class="flex h-full flex-col rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-muted)] p-4">
+              <div class="flex items-start justify-between gap-2">
+                <span class="text-xs font-medium text-[var(--color-text-muted)]">
+                  第{index + 1}位 · {alt.brandLabel}
+                </span>
+                <span class="rounded-full bg-[var(--color-primary-soft)] px-2 py-0.5 text-[10px] font-semibold text-[var(--color-primary-ink)]">
+                  score {alt.score.toFixed(2)}
+                </span>
+              </div>
+              <h3 class="mt-2 text-base font-semibold text-neutral-900">
+                {alt.model.modelName}
+              </h3>
+              <dl class="mt-3 grid grid-cols-2 gap-y-1 text-xs text-[var(--color-text-muted)]">
+                <dt>{priceLabel}</dt>
+                <dd class="text-right font-medium text-neutral-900">
+                  {formatYen(displayPrice)}
+                </dd>
+                <dt>希望小売差額</dt>
+                <dd
+                  class:list={[
+                    "text-right font-medium",
+                    alt.priceDiff < 0
+                      ? "text-[var(--color-success)]"
+                      : "text-neutral-900",
+                  ]}
+                >
+                  {alt.priceDiff >= 0 ? "+" : ""}
+                  {formatYen(alt.priceDiff)}
+                </dd>
+                <dt>容量 (洗濯/乾燥)</dt>
+                <dd class="text-right font-medium text-neutral-900">
+                  {alt.model.specs.washCapacityKg}kg /{" "}
+                  {alt.model.specs.dryCapacityKg}kg
+                </dd>
+              </dl>
+              <p class="mt-3 text-xs leading-relaxed text-[var(--color-text-muted)]">
+                {describeAlternative(alt)}
+              </p>
+              <a
+                href={`/washers/${alt.model.id}/`}
+                class="mt-auto pt-3 text-xs font-medium text-[var(--color-primary)] hover:underline"
+              >
+                {alt.model.modelName} の詳細を見る →
+              </a>
+            </li>
+          );
+        })}
+      </ol>
+    )
+  }
+</section>

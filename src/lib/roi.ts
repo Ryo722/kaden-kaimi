@@ -60,7 +60,7 @@ export function calculateRoi(input: RoiInput): RoiResult | null {
   };
 }
 
-function verdictFromPayback(years: number): RoiVerdict {
+export function verdictFromPayback(years: number): RoiVerdict {
   if (years < AXIS2_PAYBACK_RECOMMEND_MAX_YEARS) return "recommend";
   if (years < AXIS2_PAYBACK_DEPENDS_MAX_YEARS) return "depends-on-lifespan";
   if (years < AXIS2_PAYBACK_WAIT_MAX_YEARS) return "wait-until-breakdown";

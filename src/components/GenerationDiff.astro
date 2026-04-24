@@ -1,0 +1,117 @@
+---
+import type { GenerationDiff } from "@/lib/diff";
+import type { Model } from "@/types";
+import { formatYen } from "@/lib/format";
+
+interface Props {
+  target: Model;
+  predecessor: Model | null;
+  diff: GenerationDiff;
+}
+
+const { target, predecessor, diff } = Astro.props;
+
+const hasChanges =
+  predecessor !== null &&
+  (diff.addedFeatures.length > 0 ||
+    diff.removedFeatures.length > 0 ||
+    diff.numericChanges.length > 0 ||
+    diff.priceDeltaYen !== null);
+
+function priceDeltaLabel(delta: number): string {
+  if (delta > 0) return `${formatYen(delta)} 値上がり`;
+  if (delta < 0) return `${formatYen(Math.abs(delta))} 値下がり`;
+  return "価格据え置き";
+}
+---
+
+<section
+  aria-labelledby="generation-diff-heading"
+  class="mt-8 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-sm"
+>
+  <h2 id="generation-diff-heading" class="text-lg font-semibold tracking-tight">
+    世代差分（軸5: 前世代との意味翻訳）
+  </h2>
+
+  {
+    predecessor === null ? (
+      <div class="mt-5 rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-surface-muted)] p-4 text-sm text-[var(--color-text-muted)]">
+        <p>
+          {target.modelName}{" "}
+          には登録された前世代がありません。Phase 2 で過去世代のデータ拡充後に再表示します。
+        </p>
+      </div>
+    ) : (
+      <>
+        <p class="mt-2 text-sm text-[var(--color-text-muted)]">
+          前世代
+          <span class="font-medium text-neutral-900"> {predecessor.modelName} </span>
+          （{predecessor.generation} 年モデル）との比較
+        </p>
+
+        {!hasChanges && (
+          <div class="mt-5 rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-surface-muted)] p-4 text-sm text-[var(--color-text-muted)]">
+            <p>閾値を超えるスペック差分は検出されませんでした。</p>
+          </div>
+        )}
+
+        {hasChanges && (
+          <div class="mt-5 grid gap-4 md:grid-cols-2">
+            {(diff.addedFeatures.length > 0 || diff.removedFeatures.length > 0) && (
+              <div class="rounded-xl bg-[var(--color-surface-muted)] p-4">
+                <h3 class="text-xs tracking-wide text-[var(--color-text-muted)] uppercase">
+                  機能の差分
+                </h3>
+                <ul class="mt-2 space-y-2 text-sm">
+                  {diff.addedFeatures.map((f) => (
+                    <li class="flex items-start gap-2">
+                      <span class="mt-0.5 rounded-full bg-[var(--color-success-soft)] px-2 py-0.5 text-[10px] font-semibold text-[var(--color-success)]">
+                        追加
+                      </span>
+                      <span class="text-neutral-800">{f.translation}</span>
+                    </li>
+                  ))}
+                  {diff.removedFeatures.map((f) => (
+                    <li class="flex items-start gap-2">
+                      <span class="mt-0.5 rounded-full bg-[var(--color-danger-soft)] px-2 py-0.5 text-[10px] font-semibold text-[var(--color-danger)]">
+                        削除
+                      </span>
+                      <span class="text-neutral-800">{f.translation}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {diff.numericChanges.length > 0 && (
+              <div class="rounded-xl bg-[var(--color-surface-muted)] p-4">
+                <h3 class="text-xs tracking-wide text-[var(--color-text-muted)] uppercase">
+                  スペック変化
+                </h3>
+                <ul class="mt-2 space-y-2 text-sm text-neutral-800">
+                  {diff.numericChanges.map((c) => (
+                    <li>・{c.translation}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {diff.priceDeltaYen !== null && (
+              <div class="rounded-xl bg-[var(--color-surface-muted)] p-4 md:col-span-2">
+                <h3 class="text-xs tracking-wide text-[var(--color-text-muted)] uppercase">
+                  現在価格の世代比較
+                </h3>
+                <p class="mt-1 text-lg font-semibold text-neutral-900">
+                  {priceDeltaLabel(diff.priceDeltaYen)}
+                </p>
+                <p class="mt-1 text-xs text-[var(--color-text-muted)]">
+                  楽天平均（rakutenAvg）ベースの比較。発表直前は前世代がさらに値下がりする可能性があります。
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </>
+    )
+  }
+</section>

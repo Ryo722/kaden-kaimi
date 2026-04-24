@@ -4,4 +4,20 @@
   --font-sans:
     "Hiragino Kaku Gothic ProN", "Noto Sans JP", system-ui, -apple-system,
     "Segoe UI", sans-serif;
+
+  --color-primary: oklch(0.546 0.235 262.88);
+  --color-primary-soft: oklch(0.969 0.02 259.04);
+  --color-primary-ink: oklch(0.392 0.18 266.55);
+
+  --color-surface: #ffffff;
+  --color-surface-muted: oklch(0.984 0.003 247.86);
+  --color-border: oklch(0.929 0.013 255.51);
+  --color-text-muted: oklch(0.553 0.016 261.46);
+
+  --color-success: oklch(0.5 0.16 160);
+  --color-success-soft: oklch(0.972 0.044 162.65);
+  --color-warning: oklch(0.5 0.16 70);
+  --color-warning-soft: oklch(0.98 0.043 82.29);
+  --color-danger: oklch(0.5 0.22 27);
+  --color-danger-soft: oklch(0.969 0.027 12.66);
 }

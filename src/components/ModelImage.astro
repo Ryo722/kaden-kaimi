@@ -1,0 +1,50 @@
+---
+import type { BrandId } from "@/types";
+import { BRAND_HUE_DEGREES } from "@/lib/constants";
+
+interface Props {
+  brand: BrandId;
+  modelName: string;
+  class?: string;
+}
+
+const { brand, modelName, class: className = "" } = Astro.props;
+
+const hue = BRAND_HUE_DEGREES[brand];
+const bg = `hsl(${hue} 68% 94%)`;
+const fg = `hsl(${hue} 70% 30%)`;
+const initial = modelName.trim().charAt(0).toUpperCase() || "?";
+---
+
+<div
+  class:list={["relative overflow-hidden rounded-xl border border-[var(--color-border)]", className]}
+  role="img"
+  aria-label={`${modelName} のプレースホルダ画像`}
+>
+  <svg viewBox="0 0 320 240" xmlns="http://www.w3.org/2000/svg" class="block h-full w-full">
+    <rect width="320" height="240" fill={bg} />
+    <circle cx="160" cy="124" r="76" fill={fg} fill-opacity="0.1" />
+    <text
+      x="160"
+      y="148"
+      text-anchor="middle"
+      font-family="var(--font-sans)"
+      font-size="88"
+      font-weight="700"
+      fill={fg}
+    >
+      {initial}
+    </text>
+    <text
+      x="160"
+      y="212"
+      text-anchor="middle"
+      font-family="var(--font-sans)"
+      font-size="14"
+      fill={fg}
+      fill-opacity="0.7"
+    >
+      Phase 1 placeholder
+    </text>
+  </svg>
+</div>

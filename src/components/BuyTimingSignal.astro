@@ -1,0 +1,128 @@
+---
+import type { CycleResult } from "@/lib/cycle";
+import { formatIsoDate, formatYen } from "@/lib/format";
+
+interface Props {
+  result: CycleResult;
+  currentPrice: number | null;
+}
+
+const { result, currentPrice } = Astro.props;
+
+const CONFIDENCE_META: Record<
+  CycleResult["confidence"],
+  { label: string; tone: string; description: string }
+> = {
+  none: {
+    label: "判定不能",
+    tone: "bg-slate-100 text-slate-600",
+    description: "過去世代のデータが不足しているため、次モデル発表の時期は予測できません。",
+  },
+  low: {
+    label: "信頼度 低",
+    tone: "bg-amber-50 text-amber-700",
+    description: "過去世代が 1 件のみで予測精度は低めです。参考程度にご覧ください。",
+  },
+  medium: {
+    label: "信頼度 中",
+    tone: "bg-amber-50 text-amber-700",
+    description: "過去世代 2 件からの中央値予測です。",
+  },
+  high: {
+    label: "信頼度 高",
+    tone: "bg-emerald-50 text-emerald-700",
+    description: "3 世代以上のデータから安定した周期を抽出しています。",
+  },
+};
+
+const meta = CONFIDENCE_META[result.confidence];
+
+function formatDaysUntil(days: number): string {
+  if (days <= 0) return "発表予想日は過ぎています";
+  if (days < 60) return `あと約 ${days} 日`;
+  const months = Math.round(days / 30);
+  return `あと約 ${months} か月`;
+}
+
+const dropPct =
+  result.confidence === "none"
+    ? null
+    : Math.round(result.expectedDropRate * 1000) / 10;
+const projectedSavings =
+  currentPrice === null ||
+  result.expectedPriceBeforeRelease === null
+    ? null
+    : currentPrice - result.expectedPriceBeforeRelease;
+
+const daysUntilLabel = formatDaysUntil(result.daysUntilExpected);
+const dropPctLabel = dropPct === null ? "—" : `約 ${dropPct}%`;
+const savingsLabel =
+  projectedSavings === null || projectedSavings <= 0
+    ? "楽天平均ベースで追加の値下がりは見込み薄"
+    : `楽天平均ベースで ${formatYen(projectedSavings)} 下がる見通し`;
+---
+
+<section
+  aria-labelledby="buy-timing-heading"
+  class="mt-8 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-sm"
+>
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <h2 id="buy-timing-heading" class="text-lg font-semibold tracking-tight">
+      買い時シグナル（軸3: モデルチェンジ周期予測）
+    </h2>
+    <span class:list={["rounded-full px-3 py-1 text-xs font-medium", meta.tone]}>
+      {meta.label}
+    </span>
+  </div>
+
+  <p class="mt-2 text-sm text-[var(--color-text-muted)]">{meta.description}</p>
+
+  {
+    result.confidence === "none" ? (
+      <div class="mt-5 rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-surface-muted)] p-4 text-sm text-[var(--color-text-muted)]">
+        <p>
+          この機種には集計可能な前世代がありません。データが揃う Phase 2
+          以降で予測を再計算します。
+        </p>
+      </div>
+    ) : (
+      <dl class="mt-5 grid gap-4 md:grid-cols-3">
+        <div class="rounded-xl bg-[var(--color-surface-muted)] p-4">
+          <dt class="text-xs tracking-wide text-[var(--color-text-muted)] uppercase">
+            次モデル発表予想
+          </dt>
+          <dd class="mt-1 text-xl font-semibold text-neutral-900">
+            {formatIsoDate(result.expectedNextAnnouncementDate)}
+            <span class="mt-1 block text-xs font-normal text-[var(--color-text-muted)]">
+              {daysUntilLabel}
+            </span>
+          </dd>
+        </div>
+
+        <div class="rounded-xl bg-[var(--color-surface-muted)] p-4">
+          <dt class="text-xs tracking-wide text-[var(--color-text-muted)] uppercase">
+            発表直前までの値下がり予測
+          </dt>
+          <dd class="mt-1 text-xl font-semibold text-neutral-900">
+            {dropPctLabel}
+            <span class="mt-1 block text-xs font-normal text-[var(--color-text-muted)]">
+              過去世代の平均値下がり率（楽天平均基準）
+            </span>
+          </dd>
+        </div>
+
+        <div class="rounded-xl bg-[var(--color-surface-muted)] p-4">
+          <dt class="text-xs tracking-wide text-[var(--color-text-muted)] uppercase">
+            予想最安値（発表直前）
+          </dt>
+          <dd class="mt-1 text-xl font-semibold text-neutral-900">
+            {formatYen(result.expectedPriceBeforeRelease)}
+            <span class="mt-1 block text-xs font-normal text-[var(--color-text-muted)]">
+              {savingsLabel}
+            </span>
+          </dd>
+        </div>
+      </dl>
+    )
+  }
+</section>

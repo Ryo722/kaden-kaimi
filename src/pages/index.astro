@@ -1,32 +1,58 @@
 ---
 import Base from "@/layouts/Base.astro";
+import ModelImage from "@/components/ModelImage.astro";
+import { formatYen } from "@/lib/format";
+import { loadAllModels } from "@/lib/models";
+import {
+  getDisplayPrice,
+  getLatestRecord,
+  loadPriceHistory,
+} from "@/lib/prices";
 
-const axes = [
-  { id: 1, label: "同等代替機種の自動提示" },
-  { id: 2, label: "買い替え ROI 判定" },
-  { id: 3, label: "モデルチェンジ周期予測" },
-  { id: 5, label: "世代差分の意味翻訳" },
-  { id: 6, label: "ユーザー条件マッチング" },
-];
+const models = loadAllModels("drum-washer");
+const modelsWithPrice = models.map((model) => {
+  const history = loadPriceHistory("drum-washer", model.id);
+  const latest = history ? getLatestRecord(history.history) : null;
+  return {
+    model,
+    displayPrice: getDisplayPrice(latest),
+  };
+});
 ---
 
 <Base title="家電買い時 — 買い替え意思決定ダッシュボード">
-  <main class="mx-auto max-w-3xl px-6 py-20">
-    <p class="text-sm font-medium text-blue-600">Phase 1 (MVP) 準備中</p>
+  <main id="main" class="mx-auto max-w-5xl px-6 py-12">
+    <p class="text-sm font-medium text-[var(--color-primary)]">Phase 1 (MVP)</p>
     <h1 class="mt-2 text-4xl font-bold tracking-tight">家電買い時</h1>
-    <p class="mt-4 text-lg text-neutral-600">
-      価格・寿命・世代差・代替候補・利用条件を統合し、「今・この機種を買うべきか」を一枚のダッシュボードで判定します。
+    <p class="mt-4 max-w-2xl text-lg text-[var(--color-text-muted)]">
+      価格推移・寿命・世代差・代替候補・利用条件を統合し、「今・この機種を買うべきか」を一枚のダッシュボードで判定します。
     </p>
+
     <section class="mt-10">
-      <h2 class="text-sm font-semibold text-neutral-500 uppercase">実装予定の5軸</h2>
-      <ul class="mt-4 space-y-2">
+      <h2 class="text-sm font-semibold tracking-wide text-[var(--color-text-muted)] uppercase">
+        ドラム式洗濯機
+      </h2>
+      <ul class="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {
-          axes.map((axis) => (
-            <li class="flex items-center gap-3 rounded-lg border border-neutral-200 px-4 py-3">
-              <span class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-blue-50 text-sm font-semibold text-blue-700">
-                {axis.id}
-              </span>
-              <span class="text-neutral-800">{axis.label}</span>
+          modelsWithPrice.map(({ model, displayPrice }) => (
+            <li>
+              <a
+                href={`/washers/${model.id}/`}
+                class="block h-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-sm transition hover:border-[var(--color-primary)] hover:shadow-md"
+              >
+                <ModelImage brand={model.brand} modelName={model.modelNumber} class="aspect-[4/3]" />
+                <div class="mt-3">
+                  <p class="text-xs font-medium tracking-wide text-[var(--color-text-muted)] uppercase">
+                    {model.brand} · {model.generation}
+                  </p>
+                  <h3 class="mt-1 text-base font-semibold text-neutral-900">
+                    {model.modelName}
+                  </h3>
+                  <p class="mt-2 text-sm text-[var(--color-text-muted)]">
+                    現在価格 <span class="font-semibold text-neutral-900">{formatYen(displayPrice)}</span>
+                  </p>
+                </div>
+              </a>
             </li>
           ))
         }
