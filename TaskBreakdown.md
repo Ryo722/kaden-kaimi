@@ -12,7 +12,7 @@ Phase 1 の完了条件は `ROADMAP.md` の「Phase 1 成功指標」を参照�
 - [x] 1.4 Tailwind CSS 導入（Tailwind 4 + `@tailwindcss/vite` + `prettier-plugin-tailwindcss`）
 - [x] 1.5 ESLint（flat config）/ Prettier / tsconfig（astro strict 継承）設定
 - [x] 1.6 `.gitignore`, `.editorconfig`, `.nvmrc` 確認（既存を流用）
-- [ ] 1.7 git 初期化・初回コミット
+- [x] 1.7 git 初期化・初回コミット（main ブランチ、commit `chore: initial project scaffold`）
 
 **完了条件**: `pnpm build` が Cloudflare adapter で成功 ✅（2026-04-24 検証済み、prerendering `/index.html` 成功）
 
