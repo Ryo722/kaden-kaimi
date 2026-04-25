@@ -3,27 +3,11 @@
  *
  * Cloudflare Workers Cron（日次 JST 05:00）が楽天 / Yahoo! API から価格を取得し、
  * GitHub Contents API で `data/prices/**` に追記コミットする。
- *
- * P2.2: scheduled ハンドラの最小実装。実パイプラインは P2.3 / P2.4 で追加。
  */
 
-export interface Env {
-  // シークレット（.dev.vars / wrangler secret put）
-  RAKUTEN_APP_ID: string;
-  YAHOO_CLIENT_ID: string;
-  GITHUB_TOKEN: string;
+import { runPipeline, type PipelineEnv } from "./pipeline";
 
-  // 公開設定（wrangler.toml [vars]）
-  GITHUB_OWNER: string;
-  GITHUB_REPO: string;
-  GITHUB_BRANCH: string;
-  GIT_AUTHOR_NAME: string;
-  GIT_AUTHOR_EMAIL: string;
-  USER_AGENT: string;
-
-  // ドライラン用（任意）
-  TARGET_MODEL_ID?: string;
-}
+export type Env = PipelineEnv;
 
 export default {
   async scheduled(
@@ -42,7 +26,6 @@ export default {
       }),
     );
 
-    // P2.2 では env 検証のみ実施。パイプラインは P2.4 で結線。
     const missing = requireSecrets(env);
     if (missing.length > 0) {
       console.log(
@@ -55,14 +38,60 @@ export default {
       return;
     }
 
-    console.log(
-      JSON.stringify({
-        event: "scheduled.skip",
-        reason: "pipeline_not_yet_implemented",
-        target: env.TARGET_MODEL_ID ?? null,
-        durationMs: Date.now() - startedAt,
-      }),
-    );
+    try {
+      const summaries = await runPipeline({ env, now: new Date() });
+
+      for (const sum of summaries) {
+        console.log(
+          JSON.stringify({
+            event: "scheduled.category_summary",
+            date: sum.date,
+            category: sum.category,
+            categoryError: sum.categoryError,
+            totalModels: sum.totalModels,
+            written: sum.written,
+            skippedDuplicate: sum.skippedDuplicate,
+            skippedEmpty: sum.skippedEmpty,
+            failed: sum.failed,
+            durationMs: sum.durationMs,
+          }),
+        );
+        for (const r of sum.results) {
+          if (r.status !== "written") {
+            console.log(
+              JSON.stringify({
+                event: "scheduled.model_result",
+                modelId: r.modelId,
+                status: r.status,
+                reason: r.reason ?? null,
+                rakutenItemCode: r.rakuten?.topItemCode ?? null,
+                yahooItemCode: r.yahoo?.topItemCode ?? null,
+              }),
+            );
+          }
+        }
+      }
+
+      const totalWritten = summaries.reduce((sum, s) => sum + s.written, 0);
+      const totalFailed = summaries.reduce((sum, s) => sum + s.failed, 0);
+      console.log(
+        JSON.stringify({
+          event: "scheduled.done",
+          totalCategories: summaries.length,
+          totalWritten,
+          totalFailed,
+          durationMs: Date.now() - startedAt,
+        }),
+      );
+    } catch (err) {
+      console.log(
+        JSON.stringify({
+          event: "scheduled.fatal",
+          message: err instanceof Error ? err.message : "unknown",
+          durationMs: Date.now() - startedAt,
+        }),
+      );
+    }
   },
 };
 

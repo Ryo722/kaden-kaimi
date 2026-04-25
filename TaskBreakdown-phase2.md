@@ -57,20 +57,38 @@ Phase 2 の完了条件は `ROADMAP.md` の Phase 2 成功指標および `docs/
 
 ## P2.4 GitHub Contents API + 書込パイプライン
 
-- [ ] P2.4.1 `workers/fetch-prices/src/github.ts`
-  - `getFile(owner, repo, path, ref?)` → `{ sha, content }`（base64 → JSON）
-  - `putFile(owner, repo, path, sha, contentJson, message, author)` → 422/409 ハンドリング
-  - 大文字 `GITHUB_TOKEN` ではなく、秘密情報は env 経由で取得
-- [ ] P2.4.2 `workers/fetch-prices/src/pipeline.ts`
-  1. `data/models/**` を GitHub から取得（Workers ランタイムのため fs 不可）
-  2. 各機種に対して楽天 + Yahoo! API を並列実行（`Promise.allSettled`）
-  3. 取得結果を `PriceRecord` に整形（zod `PriceRecordSchema` で検証）
-  4. `data/prices/{category}/{modelId}.json` を GET → 末尾日付と比較し冪等化 → PUT
-  5. 全機種完了後、成否サマリをログ出力
-- [ ] P2.4.3 `src/types/schema.ts` を Workers からも import できるよう tsconfig / workspace を調整
-- [ ] P2.4.4 単体テスト: パイプラインを fetch モックで動かし、冪等性・部分失敗・並列処理を確認
+- [x] P2.4.1 `workers/fetch-prices/src/github.ts`
+  - `getFile` → `{ sha, text } | null`（base64 → UTF-8、404 → null）
+  - `putFile` → 422/409/401 を `GitHubApiError` 化、5xx/429 は fetchWithRetry が自動リトライ
+  - `listDirectory` → `DirEntry[]`（カテゴリ配下のモデルファイル列挙）
+  - `nodejs_compat` の `Buffer` で UTF-8 セーフ base64
+- [x] P2.4.2 `workers/fetch-prices/src/pipeline.ts`
+  1. `listDirectory(data/models/{category})` で機種を列挙
+  2. 各機種 JSON を `getFile` → 軽量 `WorkerModelSchema` で validate
+  3. 楽天 + Yahoo! API を `Promise.allSettled` で並列実行、片方失敗を許容
+  4. `PriceRecord` を組み立て、`PriceRecordSchema` で validate（A 案セーフティ）
+  5. 既存 `data/prices/{category}/{modelId}.json` を取得 → 同日付があれば skip（冪等性）
+  6. 末尾追記 → `PriceHistorySchema` で全体 validate → `putFile` で PUT
+  7. 機種間に 1 秒 sleep（楽天 1 req/s 制限）
+  8. 結果サマリ（written / skippedDuplicate / skippedEmpty / failed / categoryError）
+- [x] P2.4.3 `workers/fetch-prices/tsconfig.json` の include に `../../src/types/schema.ts` を追加して shared zod スキーマを再利用、`@types/node` 追加で `node:buffer` 解決
+- [x] P2.4.4 単体テスト 22 ケース（pipeline 13 / github 16）+ 既存 34（http 10 / rakuten 12 / yahoo 12）= **67 ケース**
+  - happy path / 冪等性 / 既存履歴追加 / 全 null skip / 片方 null 採用
+  - listDirectory 失敗（categoryError） / model schema 不正 / put 失敗 / 既存 history 不正
+  - TARGET_MODEL_ID フィルタ、機種間 sleep の呼び出し検証
+- [x] P2.4.5 `index.ts` scheduled ハンドラに pipeline 結線、JSON 構造化ログ（category_summary / model_result / done / fatal）
+- [x] P2.4.6 `jstDateString` で UTC → JST 日付変換（DST なし、+9h 固定）
+- [x] P2.4.7 自動コミット先を **A 案（main 直 push）** に確定（2026-04-25）
+  - セーフティネット: zod 二段検証（PriceRecord + PriceHistory）、追記のみ・上書き禁止、構造化ログ
+  - `categoryError` で list 失敗を per-model failure と分離
 
-**完了条件**: ローカルドライラン（1 機種）で `data/prices/**` に新日付が追記され、同日再実行で no-op になる。
+**完了条件**: ローカルドライラン（1 機種）で `data/prices/**` に新日付が追記され、同日再実行で no-op になる → ロジック上達成（実 API 経由の検証は P2.5）。
+
+**実測値**:
+- workers test: **67 passed**
+- workers coverage: stmts 93.09% / branches 85.71% / funcs 93.54% / lines 95.2%
+- 全テスト合計: **200 passed**（root 133 + workers 67）
+- bundle 549.81 KiB / gzip 82.80 KiB（zod 含む、Workers Free 1 MB 制限の 8%）
 
 ## P2.5 ローカルドライラン + 本番有効化
 
