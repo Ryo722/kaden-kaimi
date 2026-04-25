@@ -1,0 +1,32 @@
+{
+  "name": "kaden-kaimi-fetch-prices",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Cloudflare Workers Cron — 楽天/Yahoo! API 取得 + GitHub Contents API への日次価格コミット",
+  "scripts": {
+    "clean:astro-deploy": "rm -rf ../../.wrangler/deploy",
+    "predev": "pnpm clean:astro-deploy",
+    "dev": "wrangler dev --test-scheduled",
+    "predeploy": "pnpm clean:astro-deploy",
+    "deploy": "wrangler deploy",
+    "predeploy:dry": "pnpm clean:astro-deploy",
+    "deploy:dry": "wrangler deploy --dry-run --outdir=dist",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "secret:put:rakuten": "wrangler secret put RAKUTEN_APP_ID",
+    "secret:put:yahoo": "wrangler secret put YAHOO_CLIENT_ID",
+    "secret:put:github": "wrangler secret put GITHUB_TOKEN",
+    "tail": "wrangler tail"
+  },
+  "dependencies": {
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260401.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.5",
+    "wrangler": "^4.50.0"
+  }
+}

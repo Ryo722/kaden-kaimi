@@ -1,0 +1,20 @@
+name = "kaden-kaimi-fetch-prices"
+main = "src/index.ts"
+compatibility_date = "2026-04-25"
+compatibility_flags = ["nodejs_compat"]
+
+# JST 05:00 = UTC 20:00（日本は DST なし）
+[triggers]
+crons = ["0 20 * * *"]
+
+[observability]
+enabled = true
+
+# 公開可能な設定値（シークレットは .dev.vars / wrangler secret put で別管理）
+[vars]
+GITHUB_OWNER = "Ryo722"
+GITHUB_REPO = "kaden-kaimi"
+GITHUB_BRANCH = "main"
+GIT_AUTHOR_NAME = "kaden-kaimi-bot"
+GIT_AUTHOR_EMAIL = "bot@kaden-kaimi.invalid"
+USER_AGENT = "kaden-kaimi-bot/0.1 (+https://kaden-kaimi.pages.dev/)"
