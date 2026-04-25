@@ -39,19 +39,21 @@ Phase 2 の完了条件は `ROADMAP.md` の Phase 2 成功指標および `docs/
 
 ## P2.3 楽天 / Yahoo! API クライアント実装
 
-- [ ] P2.3.1 `workers/fetch-prices/src/http.ts` — `fetchWithRetry`（指数バックオフ 1s→4s→9s、最大 3 回）、`sleep`
-- [ ] P2.3.2 `workers/fetch-prices/src/rakuten.ts` — 楽天商品検索 API
-  - 入力: `{ modelNumber, rakutenItemCode? }`
-  - 出力: `{ min, avg, available } | null`
-  - `itemCode` 優先、無ければ `keyword`
-  - 単体テスト 4 ケース
-- [ ] P2.3.3 `workers/fetch-prices/src/yahoo.ts` — Yahoo! ショッピング V3 API
-  - `in_stock=true` 指定
-  - 単体テスト 4 ケース
-- [ ] P2.3.4 レート制限: 機種間 1s sleep を呼び出し側で制御
-- [ ] P2.3.5 構造変化に対する fail-safe（期待するフィールドが欠落した場合は null 返却）
+- [x] P2.3.1 `workers/fetch-prices/src/http.ts` — `fetchWithRetry`（指数バックオフ `attempt^2 * 1000ms` = 1s, 4s、最大 3 回）、`sleep`、`FetchError`、リトライ対象 `[429, 500, 502, 503, 504]` + ネットワーク例外
+- [x] P2.3.2 `workers/fetch-prices/src/rakuten.ts` — 楽天 IchibaItem 商品検索 API（itemCode 優先、未指定なら keyword フォールバック、hits=5 / sort=+itemPrice、min/avg/available 集約、構造変化 fail-safe）
+- [x] P2.3.3 `workers/fetch-prices/src/yahoo.ts` — Yahoo! ショッピング V3 API（appid 認証、results=5、in_stock=true 強制、yahooItemCode 優先 query、構造変化 fail-safe）
+- [x] P2.3.4 共通の `PriceQuote` 型を `src/types.ts` に切り出し（min/avg/available/hitCount/topItemCode）
+- [ ] P2.3.5 レート制限：機種間 1s sleep（**呼び出し側で制御** → P2.4 パイプラインで実装）
+- [x] P2.3.6 構造変化に対する fail-safe（Items/hits 欠落、価格非数値、JSON パース失敗、3xx/4xx/5xx すべて null 返却）
+- [x] P2.3.7 `vitest.config.ts`（v8 coverage、閾値 80%）
+- [x] P2.3.8 単体テスト 34 ケース（http 10 / rakuten 12 / yahoo 12）
 
-**完了条件**: Workers 側 `vitest` で楽天・Yahoo! クライアントのテストが全 pass。
+**完了条件**: Workers 側 `vitest` で楽天・Yahoo! クライアントのテストが全 pass → 達成。
+
+**実測値**:
+- 34 tests pass
+- カバレッジ: stmts 92.03% / branches 88.23% / funcs 100% / lines 97.87%
+- typecheck / lint: 0 errors
 
 ## P2.4 GitHub Contents API + 書込パイプライン
 
