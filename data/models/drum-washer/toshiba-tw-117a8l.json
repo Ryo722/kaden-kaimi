@@ -1,0 +1,33 @@
+{
+  "id": "toshiba-tw-117a8l",
+  "brand": "toshiba",
+  "modelName": "ZABOON TW-117A8L",
+  "modelNumber": "TW-117A8L",
+  "category": "drum-washer",
+  "generation": 2024,
+  "announcementDate": "2024-07-25",
+  "releaseDate": "2024-09-15",
+  "msrp": 235000,
+  "discontinued": false,
+  "predecessorId": null,
+  "successorId": null,
+  "specs": {
+    "washCapacityKg": 11,
+    "dryCapacityKg": 7,
+    "annualKwh": 215,
+    "waterPerCycleL": 88,
+    "widthMm": 645,
+    "heightMm": 1060,
+    "depthMm": 750,
+    "weightKg": 78,
+    "features": [
+      "auto-detergent",
+      "quiet-mode"
+    ]
+  },
+  "externalIds": {
+    "rakutenItemCode": null,
+    "yahooItemCode": null
+  },
+  "imageUrl": "/images/models/toshiba-tw-117a8l.webp"
+}

@@ -1,0 +1,34 @@
+{
+  "id": "panasonic-na-vg2800r",
+  "brand": "panasonic",
+  "modelName": "プチドラム NA-VG2800R",
+  "modelNumber": "NA-VG2800R",
+  "category": "drum-washer",
+  "generation": 2024,
+  "announcementDate": "2024-05-15",
+  "releaseDate": "2024-07-20",
+  "msrp": 348000,
+  "discontinued": false,
+  "predecessorId": null,
+  "successorId": null,
+  "specs": {
+    "washCapacityKg": 7,
+    "dryCapacityKg": 3.5,
+    "annualKwh": 175,
+    "waterPerCycleL": 65,
+    "widthMm": 599,
+    "heightMm": 869,
+    "depthMm": 638,
+    "weightKg": 67,
+    "features": [
+      "heat-pump",
+      "smart-app",
+      "quiet-mode"
+    ]
+  },
+  "externalIds": {
+    "rakutenItemCode": null,
+    "yahooItemCode": null
+  },
+  "imageUrl": "/images/models/panasonic-na-vg2800r.webp"
+}

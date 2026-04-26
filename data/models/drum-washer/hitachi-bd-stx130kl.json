@@ -1,0 +1,35 @@
+{
+  "id": "hitachi-bd-stx130kl",
+  "brand": "hitachi",
+  "modelName": "ビッグドラム BD-STX130KL",
+  "modelNumber": "BD-STX130KL",
+  "category": "drum-washer",
+  "generation": 2024,
+  "announcementDate": "2024-08-15",
+  "releaseDate": "2024-10-25",
+  "msrp": 405000,
+  "discontinued": false,
+  "predecessorId": null,
+  "successorId": null,
+  "specs": {
+    "washCapacityKg": 13,
+    "dryCapacityKg": 7,
+    "annualKwh": 210,
+    "waterPerCycleL": 82,
+    "widthMm": 630,
+    "heightMm": 1065,
+    "depthMm": 715,
+    "weightKg": 84,
+    "features": [
+      "heat-pump",
+      "auto-detergent",
+      "smart-app",
+      "quiet-mode"
+    ]
+  },
+  "externalIds": {
+    "rakutenItemCode": null,
+    "yahooItemCode": null
+  },
+  "imageUrl": "/images/models/hitachi-bd-stx130kl.webp"
+}

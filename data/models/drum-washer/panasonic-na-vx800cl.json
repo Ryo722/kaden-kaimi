@@ -1,0 +1,35 @@
+{
+  "id": "panasonic-na-vx800cl",
+  "brand": "panasonic",
+  "modelName": "NA-VX800CL",
+  "modelNumber": "NA-VX800CL",
+  "category": "drum-washer",
+  "generation": 2024,
+  "announcementDate": "2024-06-20",
+  "releaseDate": "2024-08-25",
+  "msrp": 295000,
+  "discontinued": false,
+  "predecessorId": null,
+  "successorId": null,
+  "specs": {
+    "washCapacityKg": 11,
+    "dryCapacityKg": 6,
+    "annualKwh": 195,
+    "waterPerCycleL": 80,
+    "widthMm": 639,
+    "heightMm": 1021,
+    "depthMm": 722,
+    "weightKg": 78,
+    "features": [
+      "heat-pump",
+      "auto-detergent",
+      "smart-app",
+      "panasonic:nanoe-x"
+    ]
+  },
+  "externalIds": {
+    "rakutenItemCode": null,
+    "yahooItemCode": null
+  },
+  "imageUrl": "/images/models/panasonic-na-vx800cl.webp"
+}

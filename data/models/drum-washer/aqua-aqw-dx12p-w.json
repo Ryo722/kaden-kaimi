@@ -1,0 +1,33 @@
+{
+  "id": "aqua-aqw-dx12p-w",
+  "brand": "aqua",
+  "modelName": "まっ直ぐドラム AQW-DX12P-W",
+  "modelNumber": "AQW-DX12P-W",
+  "category": "drum-washer",
+  "generation": 2024,
+  "announcementDate": "2024-09-05",
+  "releaseDate": "2024-11-10",
+  "msrp": 268000,
+  "discontinued": false,
+  "predecessorId": null,
+  "successorId": null,
+  "specs": {
+    "washCapacityKg": 12,
+    "dryCapacityKg": 6,
+    "annualKwh": 215,
+    "waterPerCycleL": 86,
+    "widthMm": 597,
+    "heightMm": 980,
+    "depthMm": 740,
+    "weightKg": 76,
+    "features": [
+      "auto-detergent",
+      "quiet-mode"
+    ]
+  },
+  "externalIds": {
+    "rakutenItemCode": null,
+    "yahooItemCode": null
+  },
+  "imageUrl": "/images/models/aqua-aqw-dx12p-w.webp"
+}

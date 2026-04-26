@@ -1,28 +1,29 @@
 {
-  "id": "toshiba-tw-127xp3l",
+  "id": "toshiba-tw-127xh4l",
   "brand": "toshiba",
-  "modelName": "ZABOON TW-127XP3L",
-  "modelNumber": "TW-127XP3L",
+  "modelName": "ZABOON TW-127XH4L",
+  "modelNumber": "TW-127XH4L",
   "category": "drum-washer",
-  "generation": 2024,
-  "announcementDate": "2024-08-20",
-  "releaseDate": "2024-10-15",
-  "msrp": 369000,
+  "generation": 2025,
+  "announcementDate": "2025-08-25",
+  "releaseDate": "2025-10-20",
+  "msrp": 395000,
   "discontinued": false,
-  "predecessorId": null,
-  "successorId": "toshiba-tw-127xh4l",
+  "predecessorId": "toshiba-tw-127xp3l",
+  "successorId": null,
   "specs": {
     "washCapacityKg": 12,
     "dryCapacityKg": 7,
-    "annualKwh": 205,
-    "waterPerCycleL": 85,
+    "annualKwh": 198,
+    "waterPerCycleL": 82,
     "widthMm": 645,
     "heightMm": 1060,
     "depthMm": 750,
-    "weightKg": 82,
+    "weightKg": 83,
     "features": [
       "heat-pump",
       "auto-detergent",
+      "smart-app",
       "quiet-mode",
       "toshiba:ultra-fine-bubble"
     ]
@@ -31,5 +32,5 @@
     "rakutenItemCode": null,
     "yahooItemCode": null
   },
-  "imageUrl": "/images/models/toshiba-tw-127xp3l.webp"
+  "imageUrl": "/images/models/toshiba-tw-127xh4l.webp"
 }

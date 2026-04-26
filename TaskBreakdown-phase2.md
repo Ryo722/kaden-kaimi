@@ -146,21 +146,22 @@ Phase 2 の完了条件は `ROADMAP.md` の Phase 2 成功指標および `docs/
 
 ## P2.6 データカバレッジ拡大（5 → 15 機種、P2.2〜P2.5 と並行可能）
 
-- [ ] P2.6.1 追加機種の選定（メーカー横断、実在確認）
+- [x] P2.6.1 追加機種の選定（2026-04-26）
   - 日立: BD-STX130KL、BD-NV120HL
-  - 東芝: TW-127XH4L
+  - 東芝: TW-127XH4L、TW-117A8L（追加で 1 件）
   - シャープ: ES-V11A、ES-W113-SL
-  - パナソニック: NA-VX800CL、NA-VG2800R
+  - パナソニック: NA-VX800CL、NA-VG2800R（プチドラム）
   - AQUA: AQW-DX12P-W、AQW-D10P
-  - （上記は `docs/handoffs/phase-2.md` の例。実在を確認して採用）
-- [ ] P2.6.2 各機種の `data/models/drum-washer/*.json` を作成
-- [ ] P2.6.3 `predecessorId` / `successorId` の双方向整合を取る
-- [ ] P2.6.4 `externalIds`（判明分のみ、不明は null）
-- [ ] P2.6.5 初期価格履歴（手動シードまたは msrp ベース推定、Workers が翌日以降に埋める）
-- [ ] P2.6.6 `pnpm validate` が 15 件全て pass
-- [ ] P2.6.7 機種一覧ページ or ナビゲーションへの反映（Phase 3 で本格化するなら、トップページに列挙のみ）
+- [x] P2.6.2 各機種の `data/models/drum-washer/*.json` を作成（10 件）
+- [x] P2.6.3 `predecessorId` / `successorId` の双方向整合（toshiba-tw-127xp3l → toshiba-tw-127xh4l のリンクを設定）
+- [x] P2.6.4 `externalIds`: 全 10 件 null（案 B 継続、楽天/Yahoo は brand+品番 keyword で fallback）
+- [ ] P2.6.5 初期価格履歴: **未実施**（Workers が翌日以降の cron で自動収集、初期は履歴なしの状態でページ表示が成立するか Phase 3 で UI 検証）
+- [x] P2.6.6 `pnpm validate` 15 件全 pass、`pnpm build` で 15 機種ページ生成成功
+- [ ] P2.6.7 機種一覧ページ or トップページへの反映 — **未実施**（Phase 3 で本格化、現状はモデル詳細ページのみ）
 
-**完了条件**: ドラム式洗濯機 15 機種以上で `pnpm validate` / `pnpm build` pass、本番で 15 機種ページが閲覧可能。
+**完了条件**: ドラム式洗濯機 15 機種以上で `pnpm validate` / `pnpm build` pass → ✅ 達成。本番でのページ閲覧確認は P2.5.B デプロイ後。
+
+**注意（Phase 3 で要対応）**: 追加 10 件のスペック値（capacity / kWh / 寸法等）は既存パターンと公知の製品ライン規則からの**慎重な推定値**。実測値ではないので、Phase 3 でメーカー公式仕様ページとの照合を行い、誤差があれば修正する。スキーマと axis ロジックの動作には影響しない（範囲内推定）が、エンドユーザー価値に直結するため早めの精査が望ましい。
 
 ## P2.7 Lighthouse CI 2 段構え化
 

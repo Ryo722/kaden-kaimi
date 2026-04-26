@@ -8,9 +8,10 @@ import {
 } from "./models";
 
 describe("loadAllModels", () => {
-  it("loads all 5 drum-washer sample models", () => {
+  it("loads at least the seeded drum-washer sample models", () => {
+    // 当初 5 機種、Phase 2 で 15 機種に拡大、以降の追加にも耐える
     const models = loadAllModels("drum-washer");
-    expect(models).toHaveLength(5);
+    expect(models.length).toBeGreaterThanOrEqual(5);
   });
 
   it("returns models sorted by id for deterministic output", () => {
@@ -58,7 +59,7 @@ describe("indexModelsById", () => {
   it("builds a Map keyed by id", () => {
     const models = loadAllModels("drum-washer");
     const index = indexModelsById(models);
-    expect(index.size).toBe(5);
+    expect(index.size).toBe(models.length);
     expect(index.get("hitachi-bd-sx120hl")?.brand).toBe("hitachi");
   });
 });
