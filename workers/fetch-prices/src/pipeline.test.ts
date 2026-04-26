@@ -29,8 +29,9 @@ const ENV: PipelineEnv = {
 };
 
 // 2026-04-25T20:00:00Z = JST 2026-04-26 05:00:00
+// TODAY_JST は jstDateString から導出して二重管理を避ける（W5 対応）
 const NOW = new Date("2026-04-25T20:00:00Z");
-const TODAY_JST = "2026-04-26";
+const TODAY_JST = jstDateString(NOW);
 
 const QUOTE_RAKUTEN: PriceQuote = {
   min: 280000,
@@ -38,6 +39,7 @@ const QUOTE_RAKUTEN: PriceQuote = {
   available: true,
   hitCount: 5,
   topItemCode: "shop:item-1",
+  filteredOutByMinPrice: 0,
 };
 const QUOTE_YAHOO: PriceQuote = {
   min: 285000,
@@ -45,6 +47,7 @@ const QUOTE_YAHOO: PriceQuote = {
   available: true,
   hitCount: 5,
   topItemCode: "store_item-1",
+  filteredOutByMinPrice: 0,
 };
 
 function makeModelJson(id: string, modelNumber: string): string {
@@ -492,6 +495,126 @@ describe("runPipeline — failures", () => {
 });
 
 describe("runPipeline — CATEGORY_PRICE_FLOOR propagation", () => {
+  it("omits minPrice when itemCode is supplied (W3: protect curated entries)", async () => {
+    const m = setup();
+    m.list.mockResolvedValue([
+      {
+        name: "model-curated.json",
+        path: "data/models/drum-washer/model-curated.json",
+        sha: "mc",
+        type: "file",
+      },
+    ] satisfies DirEntry[]);
+    const curatedJson = JSON.stringify({
+      id: "model-curated",
+      brand: "panasonic",
+      modelName: "Curated Test",
+      modelNumber: "CURATED-1",
+      category: "drum-washer",
+      generation: 2024,
+      announcementDate: "2024-07-15",
+      releaseDate: "2024-09-20",
+      msrp: 374000,
+      discontinued: false,
+      predecessorId: null,
+      successorId: null,
+      specs: {
+        washCapacityKg: 12,
+        dryCapacityKg: 6,
+        annualKwh: 185,
+        waterPerCycleL: 78,
+        widthMm: 604,
+        heightMm: 1021,
+        depthMm: 722,
+        weightKg: 81,
+        features: ["heat-pump"],
+      },
+      externalIds: {
+        rakutenItemCode: "shop:curated-rakuten",
+        yahooItemCode: "store_curated_yahoo",
+      },
+      imageUrl: "/images/test.webp",
+    });
+    m.get.mockImplementation(
+      async ({ path }: GetFileInput): Promise<FileSnapshot | null> => {
+        if (path.startsWith("data/models/")) {
+          return { sha: "mc", text: curatedJson };
+        }
+        return null;
+      },
+    );
+    m.rakuten.mockResolvedValue(QUOTE_RAKUTEN);
+    m.yahoo.mockResolvedValue(QUOTE_YAHOO);
+    m.put.mockResolvedValue({ commitSha: "cmt" } as PutFileResult);
+
+    await runPipeline(deps(ENV, m));
+
+    const rakutenArg = m.rakuten.mock.calls[0]?.[0] as RakutenSearchInput;
+    const yahooArg = m.yahoo.mock.calls[0]?.[0] as YahooSearchInput;
+    expect(rakutenArg.minPrice).toBeUndefined();
+    expect(yahooArg.minPrice).toBeUndefined();
+  });
+
+  it("passes minPrice independently when only one source has itemCode", async () => {
+    const m = setup();
+    m.list.mockResolvedValue([
+      {
+        name: "model-half.json",
+        path: "data/models/drum-washer/model-half.json",
+        sha: "mh",
+        type: "file",
+      },
+    ] satisfies DirEntry[]);
+    const halfJson = JSON.stringify({
+      id: "model-half",
+      brand: "panasonic",
+      modelName: "Half Curated",
+      modelNumber: "HALF-1",
+      category: "drum-washer",
+      generation: 2024,
+      announcementDate: "2024-07-15",
+      releaseDate: "2024-09-20",
+      msrp: 374000,
+      discontinued: false,
+      predecessorId: null,
+      successorId: null,
+      specs: {
+        washCapacityKg: 12,
+        dryCapacityKg: 6,
+        annualKwh: 185,
+        waterPerCycleL: 78,
+        widthMm: 604,
+        heightMm: 1021,
+        depthMm: 722,
+        weightKg: 81,
+        features: ["heat-pump"],
+      },
+      externalIds: {
+        rakutenItemCode: "shop:rakuten-only",
+        yahooItemCode: null, // Yahoo は keyword fallback
+      },
+      imageUrl: "/images/test.webp",
+    });
+    m.get.mockImplementation(
+      async ({ path }: GetFileInput): Promise<FileSnapshot | null> => {
+        if (path.startsWith("data/models/")) {
+          return { sha: "mh", text: halfJson };
+        }
+        return null;
+      },
+    );
+    m.rakuten.mockResolvedValue(QUOTE_RAKUTEN);
+    m.yahoo.mockResolvedValue(QUOTE_YAHOO);
+    m.put.mockResolvedValue({ commitSha: "cmt" } as PutFileResult);
+
+    await runPipeline(deps(ENV, m));
+
+    const rakutenArg = m.rakuten.mock.calls[0]?.[0] as RakutenSearchInput;
+    const yahooArg = m.yahoo.mock.calls[0]?.[0] as YahooSearchInput;
+    expect(rakutenArg.minPrice).toBeUndefined(); // curated → no floor
+    expect(yahooArg.minPrice).toBe(50000); // keyword fallback → floor applied
+  });
+
   it("passes the drum-washer floor (50000) as minPrice to both clients", async () => {
     const m = setup();
     m.list.mockResolvedValue([

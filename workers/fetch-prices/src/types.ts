@@ -16,4 +16,10 @@ export interface PriceQuote {
   hitCount: number;
   /** 最安値の商品コード（後追いで externalIds に書き戻す用） */
   topItemCode: string | null;
+  /**
+   * minPrice 未満で除外したヒット件数（観測ログ用）。
+   * 多すぎる場合は CATEGORY_PRICE_FLOOR の引き上げか、検索 keyword の
+   * 強化を検討する材料になる（codex review W4 対応）。
+   */
+  filteredOutByMinPrice: number;
 }

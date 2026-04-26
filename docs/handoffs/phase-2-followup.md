@@ -365,6 +365,31 @@ P2.8 完了処理（私）
 
 ---
 
+## ロードマップ F: Phase 3 引き継ぎ事項（codex review 由来）
+
+codex 差分レビュー（2026-04-26）で `Info` 区分とされた項目。Phase 3（カテゴリ拡大・データ精査）で対応する。
+
+### F1. axis5/axis6 出力の snapshot / property test
+- 対象: `data/models/drum-washer/*.json` 全件 × axis5（世代差分翻訳）× axis6（条件マッチング）の出力
+- 動機: P2.6 で追加した 10 機種は推定スペック値。axis ロジックが「5kg より小さい dryCapacity に対して `panasonic:nanoe-x` を提案する」のような不自然な組み合わせを出していないか機械的に検出したい
+- 推奨アプローチ:
+  - vitest snapshot test: 全機種 × 全 axis の出力を `__snapshots__/` に固定し、変更時に diff レビュー
+  - もしくは property test: axis 出力の不変条件（例: `推奨 verdict なら ROI スコア > 0`）を検証
+- 工数: 2〜3 時間（snapshot 整備 + 異常パターンの精査）
+
+### F2. スペック値の実機ページ照合
+- 対象: P2.6 で追加した 10 機種（`hitachi-bd-stx130kl` ほか）
+- 動機: capacity / kWh / 寸法等が公知パターンからの推定値。Phase 3 でメーカー公式ページと照合
+- 工数: 機種 1 件あたり 5〜10 分、計 1〜2 時間
+
+### F3. CATEGORY_PRICE_FLOOR のカテゴリ別 / ブランド別 override
+- 対象: `src/lib/constants.ts` の `CATEGORY_PRICE_FLOOR`
+- 動機: ドラム式 ¥50,000 で運用しているが、エアコン・冷蔵庫など他カテゴリに拡張すると相場が異なる。AQUA 等の廉価ブランドではドラム式でも ¥50k は強すぎる可能性
+- 推奨アプローチ: `CATEGORY_PRICE_FLOOR_OVERRIDES: Record<BrandId, Partial<Record<Category, number>>>` のような階層化
+- 工数: 30〜60 分
+
+---
+
 ## 連絡事項・引き継ぎメモ
 
 - **Workers バンドルサイズ**: 550.83 KiB / gzip 83.07 KiB（Workers Free 1MB の 8%）。15 機種でもサイズ増加なし（データは GitHub Contents API 経由で動的取得のため）

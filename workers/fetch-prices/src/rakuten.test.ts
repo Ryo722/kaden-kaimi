@@ -65,6 +65,7 @@ describe("searchRakuten", () => {
       available: true,
       hitCount: 3,
       topItemCode: "shop1:item-1",
+      filteredOutByMinPrice: 0,
     });
   });
 
@@ -280,6 +281,7 @@ describe("searchRakuten", () => {
       available: true,
       hitCount: 1,
       topItemCode: "shop:good",
+      filteredOutByMinPrice: 0,
     });
   });
 
@@ -377,6 +379,7 @@ describe("searchRakuten", () => {
       available: true,
       hitCount: 2,
       topItemCode: "real:280000",
+      filteredOutByMinPrice: 2, // 1320 と 4980 が除外された
     });
   });
 

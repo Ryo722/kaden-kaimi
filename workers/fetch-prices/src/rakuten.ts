@@ -91,6 +91,7 @@ function parseRakutenPayload(
   const prices: number[] = [];
   let available = false;
   let topItemCode: string | null = null;
+  let filteredOutByMinPrice = 0;
 
   for (const wrapper of items) {
     if (typeof wrapper !== "object" || wrapper === null) continue;
@@ -100,7 +101,10 @@ function parseRakutenPayload(
 
     const price = typeof obj.itemPrice === "number" ? obj.itemPrice : null;
     if (price === null || price <= 0) continue;
-    if (price < minPrice) continue;
+    if (price < minPrice) {
+      filteredOutByMinPrice++;
+      continue;
+    }
     prices.push(price);
 
     if (typeof obj.availability === "number" && obj.availability >= 1) {
@@ -120,5 +124,6 @@ function parseRakutenPayload(
     available,
     hitCount: prices.length,
     topItemCode,
+    filteredOutByMinPrice,
   };
 }

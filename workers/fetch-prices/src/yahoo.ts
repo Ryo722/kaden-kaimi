@@ -86,6 +86,7 @@ function parseYahooPayload(
 
   const prices: number[] = [];
   let topItemCode: string | null = null;
+  let filteredOutByMinPrice = 0;
 
   for (const hit of hits) {
     if (typeof hit !== "object" || hit === null) continue;
@@ -93,7 +94,10 @@ function parseYahooPayload(
 
     const price = typeof obj.price === "number" ? obj.price : null;
     if (price === null || price <= 0) continue;
-    if (price < minPrice) continue;
+    if (price < minPrice) {
+      filteredOutByMinPrice++;
+      continue;
+    }
     prices.push(price);
 
     if (topItemCode === null && typeof obj.code === "string") {
@@ -110,5 +114,6 @@ function parseYahooPayload(
     available: true,
     hitCount: prices.length,
     topItemCode,
+    filteredOutByMinPrice,
   };
 }

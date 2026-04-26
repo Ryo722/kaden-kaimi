@@ -236,8 +236,17 @@ async function processModel(
     const model = modelParsed.data;
     modelId = model.id;
 
-    const minPrice = CATEGORY_PRICE_FLOOR[category];
+    // minPrice は keyword fallback でのノイズ除去用。curated な itemCode が
+    // 指定されている場合（特価・型落ち・アウトレットを意図的に拾う運用）は
+    // フィルタを掛けない（codex review W3 対応）。
+    const categoryFloor = CATEGORY_PRICE_FLOOR[category];
     const brandDisplayName = BRAND_DISPLAY_NAMES[model.brand];
+    const rakutenMinPrice = model.externalIds.rakutenItemCode
+      ? undefined
+      : categoryFloor;
+    const yahooMinPrice = model.externalIds.yahooItemCode
+      ? undefined
+      : categoryFloor;
     const [rSettled, ySettled] = await Promise.allSettled([
       rakuten({
         modelNumber: model.modelNumber,
@@ -245,7 +254,7 @@ async function processModel(
         rakutenItemCode: model.externalIds.rakutenItemCode,
         applicationId: env.RAKUTEN_APP_ID,
         userAgent: env.USER_AGENT,
-        minPrice,
+        ...(rakutenMinPrice !== undefined && { minPrice: rakutenMinPrice }),
       }),
       yahoo({
         modelNumber: model.modelNumber,
@@ -253,7 +262,7 @@ async function processModel(
         yahooItemCode: model.externalIds.yahooItemCode,
         clientId: env.YAHOO_CLIENT_ID,
         userAgent: env.USER_AGENT,
-        minPrice,
+        ...(yahooMinPrice !== undefined && { minPrice: yahooMinPrice }),
       }),
     ]);
     rakutenQ = rSettled.status === "fulfilled" ? rSettled.value : null;

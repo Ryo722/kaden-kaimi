@@ -50,6 +50,7 @@ describe("searchYahoo", () => {
       available: true,
       hitCount: 3,
       topItemCode: "store1_itm-1",
+      filteredOutByMinPrice: 0,
     });
   });
 
@@ -241,6 +242,7 @@ describe("searchYahoo", () => {
       available: true,
       hitCount: 1,
       topItemCode: "x_c",
+      filteredOutByMinPrice: 0,
     });
   });
 
@@ -296,6 +298,7 @@ describe("searchYahoo", () => {
       available: true,
       hitCount: 2,
       topItemCode: "real_a",
+      filteredOutByMinPrice: 2, // 1320 と 4980 が除外された
     });
   });
 
