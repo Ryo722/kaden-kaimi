@@ -23,6 +23,7 @@ import {
   type PriceRecord,
   type PriceHistory,
 } from "../../../src/types/schema";
+import { CATEGORY_PRICE_FLOOR } from "../../../src/lib/constants";
 import { searchRakuten } from "./rakuten";
 import { searchYahoo } from "./yahoo";
 import {
@@ -230,18 +231,21 @@ async function processModel(
     const model = modelParsed.data;
     modelId = model.id;
 
+    const minPrice = CATEGORY_PRICE_FLOOR[category];
     const [rSettled, ySettled] = await Promise.allSettled([
       rakuten({
         modelNumber: model.modelNumber,
         rakutenItemCode: model.externalIds.rakutenItemCode,
         applicationId: env.RAKUTEN_APP_ID,
         userAgent: env.USER_AGENT,
+        minPrice,
       }),
       yahoo({
         modelNumber: model.modelNumber,
         yahooItemCode: model.externalIds.yahooItemCode,
         clientId: env.YAHOO_CLIENT_ID,
         userAgent: env.USER_AGENT,
+        minPrice,
       }),
     ]);
     rakutenQ = rSettled.status === "fulfilled" ? rSettled.value : null;

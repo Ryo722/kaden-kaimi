@@ -491,6 +491,38 @@ describe("runPipeline — failures", () => {
   });
 });
 
+describe("runPipeline — CATEGORY_PRICE_FLOOR propagation", () => {
+  it("passes the drum-washer floor (50000) as minPrice to both clients", async () => {
+    const m = setup();
+    m.list.mockResolvedValue([
+      {
+        name: "model-a.json",
+        path: "data/models/drum-washer/model-a.json",
+        sha: "ma",
+        type: "file",
+      },
+    ] satisfies DirEntry[]);
+    m.get.mockImplementation(
+      async ({ path }: GetFileInput): Promise<FileSnapshot | null> => {
+        if (path.startsWith("data/models/")) {
+          return { sha: "ma", text: makeModelJson("model-a", "MODEL-A") };
+        }
+        return null;
+      },
+    );
+    m.rakuten.mockResolvedValue(QUOTE_RAKUTEN);
+    m.yahoo.mockResolvedValue(QUOTE_YAHOO);
+    m.put.mockResolvedValue({ commitSha: "cmt" } as PutFileResult);
+
+    await runPipeline(deps(ENV, m));
+
+    const rakutenArg = m.rakuten.mock.calls[0]?.[0] as RakutenSearchInput;
+    const yahooArg = m.yahoo.mock.calls[0]?.[0] as YahooSearchInput;
+    expect(rakutenArg.minPrice).toBe(50000);
+    expect(yahooArg.minPrice).toBe(50000);
+  });
+});
+
 describe("runPipeline — TARGET_MODEL_ID", () => {
   it("filters to only the targeted model", async () => {
     const m = setup();

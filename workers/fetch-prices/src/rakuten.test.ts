@@ -264,6 +264,111 @@ describe("searchRakuten", () => {
     expect(init?.headers).toEqual({ "User-Agent": "test-ua/0.1" });
   });
 
+  it("excludes hits below minPrice and aggregates only the rest", async () => {
+    vi.mocked(globalThis.fetch).mockResolvedValueOnce(
+      mockJson({
+        Items: [
+          {
+            Item: {
+              itemCode: "parts:1320",
+              itemPrice: 1320,
+              availability: 1,
+            },
+          },
+          {
+            Item: {
+              itemCode: "manual:4980",
+              itemPrice: 4980,
+              availability: 1,
+            },
+          },
+          {
+            Item: {
+              itemCode: "real:280000",
+              itemPrice: 280000,
+              availability: 1,
+            },
+          },
+          {
+            Item: {
+              itemCode: "real:295000",
+              itemPrice: 295000,
+              availability: 1,
+            },
+          },
+        ],
+      }),
+    );
+
+    const promise = searchRakuten({ ...BASE_INPUT, minPrice: 50000 });
+    await vi.runAllTimersAsync();
+    const result = await promise;
+
+    expect(result).toEqual({
+      min: 280000,
+      avg: Math.round((280000 + 295000) / 2),
+      available: true,
+      hitCount: 2,
+      topItemCode: "real:280000",
+    });
+  });
+
+  it("returns null when every hit is below minPrice", async () => {
+    vi.mocked(globalThis.fetch).mockResolvedValueOnce(
+      mockJson({
+        Items: [
+          { Item: { itemCode: "parts:1", itemPrice: 1320, availability: 1 } },
+          { Item: { itemCode: "parts:2", itemPrice: 4980, availability: 1 } },
+        ],
+      }),
+    );
+
+    const promise = searchRakuten({ ...BASE_INPUT, minPrice: 50000 });
+    await vi.runAllTimersAsync();
+    const result = await promise;
+
+    expect(result).toBeNull();
+  });
+
+  it("propagates minPrice as an API query parameter", async () => {
+    const mockFetch = vi.mocked(globalThis.fetch);
+    mockFetch.mockResolvedValueOnce(
+      mockJson({
+        Items: [
+          { Item: { itemCode: "x:y", itemPrice: 280000, availability: 1 } },
+        ],
+      }),
+    );
+
+    const promise = searchRakuten({ ...BASE_INPUT, minPrice: 50000 });
+    await vi.runAllTimersAsync();
+    await promise;
+
+    const calledUrl = mockFetch.mock.calls[0]?.[0] as string;
+    expect(calledUrl).toContain("minPrice=50000");
+  });
+
+  it("does not append minPrice param when omitted or zero", async () => {
+    const mockFetch = vi.mocked(globalThis.fetch);
+    mockFetch.mockResolvedValue(
+      mockJson({
+        Items: [
+          { Item: { itemCode: "x:y", itemPrice: 1000, availability: 1 } },
+        ],
+      }),
+    );
+
+    let promise = searchRakuten(BASE_INPUT);
+    await vi.runAllTimersAsync();
+    await promise;
+    expect(mockFetch.mock.calls[0]?.[0] as string).not.toContain("minPrice=");
+
+    promise = searchRakuten({ ...BASE_INPUT, minPrice: 0 });
+    await vi.runAllTimersAsync();
+    await promise;
+    expect(mockFetch.mock.calls[1]?.[0] as string).not.toContain("minPrice=");
+  });
+
   it("retries on 429 and succeeds on second attempt", async () => {
     const mockFetch = vi.mocked(globalThis.fetch);
     mockFetch

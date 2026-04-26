@@ -22,6 +22,12 @@ export interface RakutenSearchInput {
   rakutenItemCode: string | null;
   applicationId: string;
   userAgent: string;
+  /**
+   * 集約から除外する下限価格（円・含む = この値未満を捨てる）。
+   * keyword フォールバック時に部品・取説など低価格商品が混入するのを防ぐ。
+   * 0 / 未指定なら無効。
+   */
+  minPrice?: number;
 }
 
 export async function searchRakuten(
@@ -37,6 +43,9 @@ export async function searchRakuten(
     params.set("itemCode", input.rakutenItemCode);
   } else {
     params.set("keyword", input.modelNumber);
+  }
+  if (input.minPrice && input.minPrice > 0) {
+    params.set("minPrice", String(input.minPrice));
   }
   const url = `${RAKUTEN_ENDPOINT}?${params.toString()}`;
 
@@ -59,10 +68,13 @@ export async function searchRakuten(
     return null;
   }
 
-  return parseRakutenPayload(payload);
+  return parseRakutenPayload(payload, input.minPrice ?? 0);
 }
 
-function parseRakutenPayload(payload: unknown): PriceQuote | null {
+function parseRakutenPayload(
+  payload: unknown,
+  minPrice: number,
+): PriceQuote | null {
   if (typeof payload !== "object" || payload === null) return null;
   const items = (payload as { Items?: unknown }).Items;
   if (!Array.isArray(items) || items.length === 0) return null;
@@ -79,6 +91,7 @@ function parseRakutenPayload(payload: unknown): PriceQuote | null {
 
     const price = typeof obj.itemPrice === "number" ? obj.itemPrice : null;
     if (price === null || price <= 0) continue;
+    if (price < minPrice) continue;
     prices.push(price);
 
     if (typeof obj.availability === "number" && obj.availability >= 1) {

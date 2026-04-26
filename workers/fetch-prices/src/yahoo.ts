@@ -22,6 +22,12 @@ export interface YahooSearchInput {
   yahooItemCode: string | null;
   clientId: string;
   userAgent: string;
+  /**
+   * 集約から除外する下限価格（円・含む = この値未満を捨てる）。
+   * keyword フォールバック時に部品・取説など低価格商品が混入するのを防ぐ。
+   * 0 / 未指定なら無効。
+   */
+  minPrice?: number;
 }
 
 export async function searchYahoo(
@@ -33,6 +39,9 @@ export async function searchYahoo(
     in_stock: "true",
     query: input.yahooItemCode ?? input.modelNumber,
   });
+  if (input.minPrice && input.minPrice > 0) {
+    params.set("price_from", String(input.minPrice));
+  }
   const url = `${YAHOO_ENDPOINT}?${params.toString()}`;
 
   let response: Response;
@@ -54,10 +63,13 @@ export async function searchYahoo(
     return null;
   }
 
-  return parseYahooPayload(payload);
+  return parseYahooPayload(payload, input.minPrice ?? 0);
 }
 
-function parseYahooPayload(payload: unknown): PriceQuote | null {
+function parseYahooPayload(
+  payload: unknown,
+  minPrice: number,
+): PriceQuote | null {
   if (typeof payload !== "object" || payload === null) return null;
   const hits = (payload as { hits?: unknown }).hits;
   if (!Array.isArray(hits) || hits.length === 0) return null;
@@ -71,6 +83,7 @@ function parseYahooPayload(payload: unknown): PriceQuote | null {
 
     const price = typeof obj.price === "number" ? obj.price : null;
     if (price === null || price <= 0) continue;
+    if (price < minPrice) continue;
     prices.push(price);
 
     if (topItemCode === null && typeof obj.code === "string") {

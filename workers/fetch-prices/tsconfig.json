@@ -20,5 +20,10 @@
     "verbatimModuleSyntax": true,
     "noEmit": true
   },
-  "include": ["src/**/*", "../../src/types/schema.ts"]
+  "include": [
+    "src/**/*",
+    "../../src/types/schema.ts",
+    "../../src/types/index.ts",
+    "../../src/lib/constants.ts"
+  ]
 }

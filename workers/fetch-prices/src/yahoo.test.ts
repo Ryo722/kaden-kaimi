@@ -214,6 +214,87 @@ describe("searchYahoo", () => {
     expect(init?.headers).toEqual({ "User-Agent": "test-ua/0.1" });
   });
 
+  it("excludes hits below minPrice and aggregates only the rest", async () => {
+    vi.mocked(globalThis.fetch).mockResolvedValueOnce(
+      mockJson({
+        hits: [
+          { code: "andonya_y_n-gy1x10", price: 1320, inStock: true },
+          { code: "parts_a", price: 4980, inStock: true },
+          { code: "real_a", price: 285000, inStock: true },
+          { code: "real_b", price: 298000, inStock: true },
+        ],
+      }),
+    );
+
+    const promise = searchYahoo({ ...BASE_INPUT, minPrice: 50000 });
+    await vi.runAllTimersAsync();
+    const result = await promise;
+
+    expect(result).toEqual({
+      min: 285000,
+      avg: Math.round((285000 + 298000) / 2),
+      available: true,
+      hitCount: 2,
+      topItemCode: "real_a",
+    });
+  });
+
+  it("returns null when every hit is below minPrice", async () => {
+    vi.mocked(globalThis.fetch).mockResolvedValueOnce(
+      mockJson({
+        hits: [
+          { code: "parts_x", price: 1320, inStock: true },
+          { code: "parts_y", price: 4980, inStock: true },
+        ],
+      }),
+    );
+
+    const promise = searchYahoo({ ...BASE_INPUT, minPrice: 50000 });
+    await vi.runAllTimersAsync();
+    const result = await promise;
+
+    expect(result).toBeNull();
+  });
+
+  it("propagates minPrice as price_from query parameter", async () => {
+    const mockFetch = vi.mocked(globalThis.fetch);
+    mockFetch.mockResolvedValueOnce(
+      mockJson({
+        hits: [{ code: "real_a", price: 285000, inStock: true }],
+      }),
+    );
+
+    const promise = searchYahoo({ ...BASE_INPUT, minPrice: 50000 });
+    await vi.runAllTimersAsync();
+    await promise;
+
+    const calledUrl = mockFetch.mock.calls[0]?.[0] as string;
+    expect(calledUrl).toContain("price_from=50000");
+  });
+
+  it("does not append price_from when minPrice is omitted or zero", async () => {
+    const mockFetch = vi.mocked(globalThis.fetch);
+    mockFetch.mockResolvedValue(
+      mockJson({
+        hits: [{ code: "x_y", price: 100000, inStock: true }],
+      }),
+    );
+
+    let promise = searchYahoo(BASE_INPUT);
+    await vi.runAllTimersAsync();
+    await promise;
+    expect(mockFetch.mock.calls[0]?.[0] as string).not.toContain(
+      "price_from=",
+    );
+
+    promise = searchYahoo({ ...BASE_INPUT, minPrice: 0 });
+    await vi.runAllTimersAsync();
+    await promise;
+    expect(mockFetch.mock.calls[1]?.[0] as string).not.toContain(
+      "price_from=",
+    );
+  });
+
   it("retries on 503 and succeeds on second attempt", async () => {
     const mockFetch = vi.mocked(globalThis.fetch);
     mockFetch

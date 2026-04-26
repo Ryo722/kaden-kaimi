@@ -114,11 +114,11 @@ Phase 2 の完了条件は `ROADMAP.md` の Phase 2 成功指標および `docs/
 
 **原因**: P2.1.6 で「案 B（externalIds null 継続、keyword フォールバック）」を採用したため、品番文字列でしか絞れていない。
 
-**対策（次セッションで実装）**:
-- [ ] P2.5.D1 価格下限フィルタを追加（カテゴリごとの `minPrice` を `src/lib/constants.ts` に定義、ドラム式は ¥50,000）
-- [ ] P2.5.D2 `workers/fetch-prices/src/rakuten.ts` / `yahoo.ts` でフィルタ適用（カテゴリを `RakutenSearchInput` / `YahooSearchInput` に追加）
-- [ ] P2.5.D3 単体テストで「下限以下のヒットを除外」を検証
-- [ ] P2.5.D4 再ドライラン（`phase-2-dryrun` ブランチを再利用）して、まともな価格になることを確認
+**対策（2026-04-26 実装完了）**:
+- [x] P2.5.D1 価格下限フィルタを追加（カテゴリごとの `minPrice` を `src/lib/constants.ts` に `CATEGORY_PRICE_FLOOR` として定義、ドラム式は ¥50,000）
+- [x] P2.5.D2 `workers/fetch-prices/src/rakuten.ts` / `yahoo.ts` の `Search Input` に `minPrice` を追加し、(a) URL クエリ（`minPrice` / `price_from`）と (b) 集約段でのクライアント側フィルタの二段で除外。`pipeline.ts` から `CATEGORY_PRICE_FLOOR[category]` を渡す
+- [x] P2.5.D3 単体テスト 9 件追加（rakuten 4 / yahoo 4 / pipeline 1）— 「下限未満を除外」「全て下限未満なら null」「クエリ送出」「未指定時は省略」「pipeline から 50000 が両クライアントへ伝搬」
+- [ ] P2.5.D4 再ドライラン（`phase-2-dryrun` ブランチを再利用）して、まともな価格になることを確認 — **ユーザー作業（手順は `docs/devlog/2026-04-26.md`）**
 
 ### ステップ B: 本番デプロイ（D 完了後に着手）
 
