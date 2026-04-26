@@ -9,6 +9,17 @@ export const BRAND_HUE_DEGREES: Record<BrandId, number> = {
   aqua: 190,
 };
 
+// 楽天 / Yahoo! の keyword 検索精度を上げるためにブランド名を併記する用の表示名。
+// 値は data/brands.json の displayName と一致させる。
+// ブランドを追加した際は brands.json と本マップの両方を更新する必要がある。
+export const BRAND_DISPLAY_NAMES: Record<BrandId, string> = {
+  panasonic: "パナソニック",
+  hitachi: "日立",
+  toshiba: "東芝",
+  sharp: "シャープ",
+  aqua: "AQUA",
+};
+
 export const AXIS6_FEATURE_LABELS: Record<string, string> = {
   "heat-pump": "ヒートポンプ乾燥",
   "auto-detergent": "洗剤自動投入",

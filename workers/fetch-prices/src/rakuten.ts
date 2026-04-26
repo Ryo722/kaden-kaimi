@@ -19,6 +19,12 @@ const HITS_PER_REQUEST = 5;
 
 export interface RakutenSearchInput {
   modelNumber: string;
+  /**
+   * ブランド表示名（例: "パナソニック"）。指定時は keyword を
+   * "ブランド名 品番" に組み立て、品番単独検索より精度を上げる。
+   * itemCode 検索時は無視される。
+   */
+  brandDisplayName?: string;
   rakutenItemCode: string | null;
   applicationId: string;
   userAgent: string;
@@ -42,7 +48,10 @@ export async function searchRakuten(
   if (input.rakutenItemCode) {
     params.set("itemCode", input.rakutenItemCode);
   } else {
-    params.set("keyword", input.modelNumber);
+    const keyword = input.brandDisplayName
+      ? `${input.brandDisplayName} ${input.modelNumber}`
+      : input.modelNumber;
+    params.set("keyword", keyword);
   }
   if (input.minPrice && input.minPrice > 0) {
     params.set("minPrice", String(input.minPrice));

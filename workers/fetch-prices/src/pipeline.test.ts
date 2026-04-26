@@ -523,6 +523,66 @@ describe("runPipeline — CATEGORY_PRICE_FLOOR propagation", () => {
   });
 });
 
+describe("runPipeline — brand display name propagation", () => {
+  it("passes brand display name (panasonic → パナソニック) to both clients", async () => {
+    const m = setup();
+    m.list.mockResolvedValue([
+      {
+        name: "model-a.json",
+        path: "data/models/drum-washer/model-a.json",
+        sha: "ma",
+        type: "file",
+      },
+    ] satisfies DirEntry[]);
+    m.get.mockImplementation(
+      async ({ path }: GetFileInput): Promise<FileSnapshot | null> => {
+        if (path.startsWith("data/models/")) {
+          return { sha: "ma", text: makeModelJson("model-a", "NA-LX129DL") };
+        }
+        return null;
+      },
+    );
+    m.rakuten.mockResolvedValue(QUOTE_RAKUTEN);
+    m.yahoo.mockResolvedValue(QUOTE_YAHOO);
+    m.put.mockResolvedValue({ commitSha: "cmt" } as PutFileResult);
+
+    await runPipeline(deps(ENV, m));
+
+    const rakutenArg = m.rakuten.mock.calls[0]?.[0] as RakutenSearchInput;
+    const yahooArg = m.yahoo.mock.calls[0]?.[0] as YahooSearchInput;
+    expect(rakutenArg.brandDisplayName).toBe("パナソニック");
+    expect(yahooArg.brandDisplayName).toBe("パナソニック");
+  });
+
+  it("rejects model with invalid brand id (schema validation)", async () => {
+    const m = setup();
+    m.list.mockResolvedValue([
+      {
+        name: "model-x.json",
+        path: "data/models/drum-washer/model-x.json",
+        sha: "mx",
+        type: "file",
+      },
+    ] satisfies DirEntry[]);
+    const badJson = JSON.stringify({
+      id: "model-x",
+      brand: "unknown-brand", // not in BrandIdSchema enum
+      modelNumber: "X-1",
+      externalIds: { rakutenItemCode: null, yahooItemCode: null },
+    });
+    m.get.mockResolvedValue({ sha: "mx", text: badJson });
+
+    const summaries = await runPipeline(deps(ENV, m));
+    const sum = summaries[0]!;
+
+    expect(sum.failed).toBe(1);
+    expect(sum.results[0]?.status).toBe("failed");
+    expect(sum.results[0]?.reason).toMatch(/model_schema_invalid/);
+    expect(m.rakuten).not.toHaveBeenCalled();
+    expect(m.yahoo).not.toHaveBeenCalled();
+  });
+});
+
 describe("runPipeline — TARGET_MODEL_ID", () => {
   it("filters to only the targeted model", async () => {
     const m = setup();

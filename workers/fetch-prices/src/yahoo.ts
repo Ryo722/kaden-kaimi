@@ -19,6 +19,12 @@ const RESULTS_PER_REQUEST = 5;
 
 export interface YahooSearchInput {
   modelNumber: string;
+  /**
+   * ブランド表示名（例: "パナソニック"）。指定時は query を
+   * "ブランド名 品番" に組み立て、品番単独検索より精度を上げる。
+   * yahooItemCode が指定されている場合は無視される（itemCode を query に使う）。
+   */
+  brandDisplayName?: string;
   yahooItemCode: string | null;
   clientId: string;
   userAgent: string;
@@ -33,11 +39,15 @@ export interface YahooSearchInput {
 export async function searchYahoo(
   input: YahooSearchInput,
 ): Promise<PriceQuote | null> {
+  const query = input.yahooItemCode
+    ?? (input.brandDisplayName
+      ? `${input.brandDisplayName} ${input.modelNumber}`
+      : input.modelNumber);
   const params = new URLSearchParams({
     appid: input.clientId,
     results: String(RESULTS_PER_REQUEST),
     in_stock: "true",
-    query: input.yahooItemCode ?? input.modelNumber,
+    query,
   });
   if (input.minPrice && input.minPrice > 0) {
     params.set("price_from", String(input.minPrice));

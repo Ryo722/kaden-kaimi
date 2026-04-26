@@ -18,12 +18,16 @@
 
 import { z } from "zod";
 import {
+  BrandIdSchema,
   PriceRecordSchema,
   PriceHistorySchema,
   type PriceRecord,
   type PriceHistory,
 } from "../../../src/types/schema";
-import { CATEGORY_PRICE_FLOOR } from "../../../src/lib/constants";
+import {
+  BRAND_DISPLAY_NAMES,
+  CATEGORY_PRICE_FLOOR,
+} from "../../../src/lib/constants";
 import { searchRakuten } from "./rakuten";
 import { searchYahoo } from "./yahoo";
 import {
@@ -43,6 +47,7 @@ const RATE_LIMIT_SLEEP_MS = 1000;
 const WorkerModelSchema = z
   .object({
     id: z.string(),
+    brand: BrandIdSchema,
     modelNumber: z.string(),
     externalIds: z.object({
       rakutenItemCode: z.string().nullable(),
@@ -232,9 +237,11 @@ async function processModel(
     modelId = model.id;
 
     const minPrice = CATEGORY_PRICE_FLOOR[category];
+    const brandDisplayName = BRAND_DISPLAY_NAMES[model.brand];
     const [rSettled, ySettled] = await Promise.allSettled([
       rakuten({
         modelNumber: model.modelNumber,
+        brandDisplayName,
         rakutenItemCode: model.externalIds.rakutenItemCode,
         applicationId: env.RAKUTEN_APP_ID,
         userAgent: env.USER_AGENT,
@@ -242,6 +249,7 @@ async function processModel(
       }),
       yahoo({
         modelNumber: model.modelNumber,
+        brandDisplayName,
         yahooItemCode: model.externalIds.yahooItemCode,
         clientId: env.YAHOO_CLIENT_ID,
         userAgent: env.USER_AGENT,

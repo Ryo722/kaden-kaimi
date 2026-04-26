@@ -75,6 +75,66 @@ describe("searchYahoo", () => {
     expect(calledUrl).toContain("query=NA-LX129DL");
   });
 
+  it("composes 'brandName modelNumber' query when brandDisplayName is supplied", async () => {
+    const mockFetch = vi.mocked(globalThis.fetch);
+    mockFetch.mockResolvedValueOnce(
+      mockJson({
+        hits: [{ code: "store_real", price: 250000, inStock: true }],
+      }),
+    );
+
+    const promise = searchYahoo({
+      ...BASE_INPUT,
+      brandDisplayName: "パナソニック",
+    });
+    await vi.runAllTimersAsync();
+    await promise;
+
+    const calledUrl = mockFetch.mock.calls[0]?.[0] as string;
+    // URL encoded: パナソニック → %E3%83%91%E3%83%8A%E3%82%BD%E3%83%8B%E3%83%83%E3%82%AF, space → +
+    expect(calledUrl).toContain(
+      "query=%E3%83%91%E3%83%8A%E3%82%BD%E3%83%8B%E3%83%83%E3%82%AF+NA-LX129DL",
+    );
+  });
+
+  it("uses bare modelNumber as query when brandDisplayName is omitted", async () => {
+    const mockFetch = vi.mocked(globalThis.fetch);
+    mockFetch.mockResolvedValueOnce(
+      mockJson({
+        hits: [{ code: "store_real", price: 250000, inStock: true }],
+      }),
+    );
+
+    const promise = searchYahoo(BASE_INPUT);
+    await vi.runAllTimersAsync();
+    await promise;
+
+    const calledUrl = mockFetch.mock.calls[0]?.[0] as string;
+    expect(calledUrl).toContain("query=NA-LX129DL");
+    expect(calledUrl).not.toContain("%E3%83%91");
+  });
+
+  it("ignores brandDisplayName when yahooItemCode is supplied", async () => {
+    const mockFetch = vi.mocked(globalThis.fetch);
+    mockFetch.mockResolvedValueOnce(
+      mockJson({
+        hits: [{ code: "store_real", price: 250000, inStock: true }],
+      }),
+    );
+
+    const promise = searchYahoo({
+      ...BASE_INPUT,
+      brandDisplayName: "パナソニック",
+      yahooItemCode: "store_panasonic-na-lx",
+    });
+    await vi.runAllTimersAsync();
+    await promise;
+
+    const calledUrl = mockFetch.mock.calls[0]?.[0] as string;
+    expect(calledUrl).toContain("query=store_panasonic-na-lx");
+    expect(calledUrl).not.toContain("%E3%83%91");
+  });
+
   it("uses yahooItemCode as query when supplied", async () => {
     const mockFetch = vi.mocked(globalThis.fetch);
     mockFetch.mockResolvedValueOnce(

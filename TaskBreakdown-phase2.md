@@ -118,9 +118,17 @@ Phase 2 の完了条件は `ROADMAP.md` の Phase 2 成功指標および `docs/
 - [x] P2.5.D1 価格下限フィルタを追加（カテゴリごとの `minPrice` を `src/lib/constants.ts` に `CATEGORY_PRICE_FLOOR` として定義、ドラム式は ¥50,000）
 - [x] P2.5.D2 `workers/fetch-prices/src/rakuten.ts` / `yahoo.ts` の `Search Input` に `minPrice` を追加し、(a) URL クエリ（`minPrice` / `price_from`）と (b) 集約段でのクライアント側フィルタの二段で除外。`pipeline.ts` から `CATEGORY_PRICE_FLOOR[category]` を渡す
 - [x] P2.5.D3 単体テスト 9 件追加（rakuten 4 / yahoo 4 / pipeline 1）— 「下限未満を除外」「全て下限未満なら null」「クエリ送出」「未指定時は省略」「pipeline から 50000 が両クライアントへ伝搬」
-- [ ] P2.5.D4 再ドライラン（`phase-2-dryrun` ブランチを再利用）して、まともな価格になることを確認 — **ユーザー作業（手順は `docs/devlog/2026-04-26.md`）**
+- [x] P2.5.D4 再ドライラン実施（commit `78c66a0`）。Yahoo は ¥220k で実機相場、楽天は依然 0 件 → 部品ショップ ¥1,320 除外は確認できたが楽天問題が残る
 
-### ステップ B: 本番デプロイ（D 完了後に着手）
+### ステップ E: keyword に brand 名併記（楽天 0 件対策、2026-04-26 実装完了）
+
+- [x] P2.5.E1 `BRAND_DISPLAY_NAMES: Record<BrandId, string>` を `src/lib/constants.ts` に追加（brands.json 同期、追加時は両方更新）
+- [x] P2.5.E2 `RakutenSearchInput` / `YahooSearchInput` に `brandDisplayName?: string` を追加し、指定時は `"ブランド名 品番"` で keyword 検索（後方互換維持）
+- [x] P2.5.E3 `pipeline.ts` の `WorkerModelSchema` に `brand: BrandIdSchema` を追加し、`BRAND_DISPLAY_NAMES[model.brand]` を両クライアントに伝搬
+- [x] P2.5.E4 単体テスト 8 件追加（rakuten 3 / yahoo 3 / pipeline 2）— brand 併記 URL / brand 不在時の従来挙動 / itemCode 優先時の brand 無視 / pipeline 伝搬 / 不正 brand schema reject
+- [ ] P2.5.E5 再ドライラン（push 後）して楽天もヒットすることを確認 — **ユーザー作業**
+
+### ステップ B: 本番デプロイ（D / E 完了後に着手）
 
 - [ ] P2.5.B1 `.dev.vars` から `GITHUB_BRANCH` / `TARGET_MODEL_ID` 上書きを削除
 - [ ] P2.5.B2 `wrangler secret put` で本番 Workers に 3 つの secret 登録

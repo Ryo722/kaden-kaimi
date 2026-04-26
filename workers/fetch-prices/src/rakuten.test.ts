@@ -97,6 +97,73 @@ describe("searchRakuten", () => {
     expect(calledUrl).not.toContain("keyword=");
   });
 
+  it("composes 'brandName modelNumber' keyword when brandDisplayName is supplied", async () => {
+    const mockFetch = vi.mocked(globalThis.fetch);
+    mockFetch.mockResolvedValueOnce(
+      mockJson({
+        Items: [
+          { Item: { itemCode: "shop:p", itemPrice: 250000, availability: 1 } },
+        ],
+      }),
+    );
+
+    const promise = searchRakuten({
+      ...BASE_INPUT,
+      brandDisplayName: "パナソニック",
+    });
+    await vi.runAllTimersAsync();
+    await promise;
+
+    const calledUrl = mockFetch.mock.calls[0]?.[0] as string;
+    // URL encoded: パナソニック → %E3%83%91%E3%83%8A%E3%82%BD%E3%83%8B%E3%83%83%E3%82%AF, space → +
+    expect(calledUrl).toContain(
+      "keyword=%E3%83%91%E3%83%8A%E3%82%BD%E3%83%8B%E3%83%83%E3%82%AF+NA-LX129DL",
+    );
+    expect(calledUrl).not.toContain("itemCode=");
+  });
+
+  it("uses bare modelNumber as keyword when brandDisplayName is omitted", async () => {
+    const mockFetch = vi.mocked(globalThis.fetch);
+    mockFetch.mockResolvedValueOnce(
+      mockJson({
+        Items: [
+          { Item: { itemCode: "shop:p", itemPrice: 250000, availability: 1 } },
+        ],
+      }),
+    );
+
+    const promise = searchRakuten(BASE_INPUT);
+    await vi.runAllTimersAsync();
+    await promise;
+
+    const calledUrl = mockFetch.mock.calls[0]?.[0] as string;
+    expect(calledUrl).toContain("keyword=NA-LX129DL");
+    expect(calledUrl).not.toContain("%E3%83%91"); // no brand name encoded
+  });
+
+  it("ignores brandDisplayName when rakutenItemCode is supplied", async () => {
+    const mockFetch = vi.mocked(globalThis.fetch);
+    mockFetch.mockResolvedValueOnce(
+      mockJson({
+        Items: [
+          { Item: { itemCode: "shop:p", itemPrice: 250000, availability: 1 } },
+        ],
+      }),
+    );
+
+    const promise = searchRakuten({
+      ...BASE_INPUT,
+      brandDisplayName: "パナソニック",
+      rakutenItemCode: "myshop:my-item",
+    });
+    await vi.runAllTimersAsync();
+    await promise;
+
+    const calledUrl = mockFetch.mock.calls[0]?.[0] as string;
+    expect(calledUrl).toContain("itemCode=myshop%3Amy-item");
+    expect(calledUrl).not.toContain("keyword=");
+  });
+
   it("falls back to keyword search when rakutenItemCode is null", async () => {
     const mockFetch = vi.mocked(globalThis.fetch);
     mockFetch.mockResolvedValueOnce(
