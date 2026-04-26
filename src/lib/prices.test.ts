@@ -11,10 +11,11 @@ import {
 } from "./prices";
 
 describe("loadPriceHistory", () => {
-  it("loads 30-day history for a known model", () => {
+  it("loads at least the seeded 30-day history for a known model", () => {
+    // seed が 30 件、cron 稼働後は日次で追記されるため >= 30 で検証
     const history = loadPriceHistory("drum-washer", "panasonic-na-lx129dl");
     expect(history).not.toBeNull();
-    expect(history?.history).toHaveLength(30);
+    expect(history?.history.length).toBeGreaterThanOrEqual(30);
   });
 
   it("returns null for an unknown model", () => {
@@ -26,7 +27,8 @@ describe("getLatestRecord", () => {
   it("returns the last record (history is ascending by schema guarantee)", () => {
     const history = loadPriceHistory("drum-washer", "panasonic-na-lx129dl");
     const latest = getLatestRecord(history!.history);
-    expect(latest?.date).toBe("2026-04-24");
+    // 具体日付ではなく「配列最後尾と一致」で assert（cron 追記耐性）
+    expect(latest).toEqual(history!.history[history!.history.length - 1]);
   });
 
   it("returns null for empty history", () => {
