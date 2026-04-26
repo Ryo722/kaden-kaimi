@@ -92,15 +92,49 @@ Phase 2 の完了条件は `ROADMAP.md` の Phase 2 成功指標および `docs/
 
 ## P2.5 ローカルドライラン + 本番有効化
 
-- [ ] P2.5.1 `TARGET_MODEL_ID` 環境変数でドライラン対象を絞る
-- [ ] P2.5.2 `wrangler dev --test-scheduled` で実 API を叩き、GitHub に test branch で書込（可能なら）
-- [ ] P2.5.3 `wrangler deploy` で本番投入（Cron 無効化状態）
-- [ ] P2.5.4 手動トリガ（`wrangler triggers deploy` / fetch エンドポイント）で 1 回動作確認
-- [ ] P2.5.5 GitHub に PR が立ち、Cloudflare Pages が自動再ビルド、本番で最新価格が反映されることを確認
-- [ ] P2.5.6 `wrangler.toml` の `[triggers] crons` を有効化し再デプロイ
-- [ ] P2.5.7 初日の Cron 実行ログを確認
+### ステップ A: ドライラン用ブランチでのテスト（2026-04-25 完了）
 
-**完了条件**: Cron が JST 05:00 に有効化され、初回自動実行が成功。
+- [x] P2.5.A1 `phase-2-dryrun` ブランチを作成し origin に push
+- [x] P2.5.A2 `.dev.vars` に `GITHUB_BRANCH=phase-2-dryrun` と `TARGET_MODEL_ID=panasonic-na-lx129dl` を追記（ローカル限定上書き）
+- [x] P2.5.A3 `wrangler dev --test-scheduled` + `curl /__scheduled` で実 API 経由ドライラン
+  - 結果: `written: 1, failed: 0, durationMs: 2017`
+  - GitHub commit `8205597` が `phase-2-dryrun` に作成（author: `kaden-kaimi-bot`）
+- [x] P2.5.A4 GitHub 上のコミット差分を目視確認 — JSON 末尾に 7 行追加のみ、構造保持
+- [x] P2.5.A5 同じコマンドを再実行して冪等性確認
+  - 結果: `skipped_duplicate, reason: date_already_exists`、コミット重複なし
+
+### ⚠️ ステップ A で発覚した残課題（次セッションの最優先事項）
+
+書き込まれた価格レコード:
+```json
+{ "date": "2026-04-25", "rakutenMin": null, "rakutenAvg": null,
+  "yahooMin": 1320, "yahooAvg": 3987 }
+```
+楽天は `keyword=NA-LX129DL` でヒット 0 件、Yahoo! は部品ショップ「andonya」の `y_n-gy1x10` が top hit となり、実機ではなく**部品・付属品の価格**が混入。
+
+**原因**: P2.1.6 で「案 B（externalIds null 継続、keyword フォールバック）」を採用したため、品番文字列でしか絞れていない。
+
+**対策（次セッションで実装）**:
+- [ ] P2.5.D1 価格下限フィルタを追加（カテゴリごとの `minPrice` を `src/lib/constants.ts` に定義、ドラム式は ¥50,000）
+- [ ] P2.5.D2 `workers/fetch-prices/src/rakuten.ts` / `yahoo.ts` でフィルタ適用（カテゴリを `RakutenSearchInput` / `YahooSearchInput` に追加）
+- [ ] P2.5.D3 単体テストで「下限以下のヒットを除外」を検証
+- [ ] P2.5.D4 再ドライラン（`phase-2-dryrun` ブランチを再利用）して、まともな価格になることを確認
+
+### ステップ B: 本番デプロイ（D 完了後に着手）
+
+- [ ] P2.5.B1 `.dev.vars` から `GITHUB_BRANCH` / `TARGET_MODEL_ID` 上書きを削除
+- [ ] P2.5.B2 `wrangler secret put` で本番 Workers に 3 つの secret 登録
+- [ ] P2.5.B3 `wrangler deploy` で本番投入（cron は wrangler.toml で有効状態のままデプロイされる点に注意）
+- [ ] P2.5.B4 本番 Worker に手動トリガで 1 回動作確認（Cloudflare ダッシュボードまたは `wrangler tail`）
+- [ ] P2.5.B5 main ブランチに自動コミットが追加され、Cloudflare Pages が自動再ビルド、本番で最新価格が反映されることを確認
+- [ ] P2.5.B6 cron 初回実行（JST 05:00）のログを翌朝確認
+
+### ステップ C: クリーンアップ
+
+- [ ] P2.5.C1 `phase-2-dryrun` ブランチを GitHub と local から削除
+- [ ] P2.5.C2 `.dev.vars` の現状（dryrun 上書きあり）を README または devlog に記録
+
+**完了条件**: Cron が JST 05:00 に有効化され、初回自動実行が成功し、まともな価格が main に書き込まれる。
 
 ## P2.6 データカバレッジ拡大（5 → 15 機種、P2.2〜P2.5 と並行可能）
 
