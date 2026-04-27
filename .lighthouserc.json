@@ -6,7 +6,7 @@
         "http://localhost/",
         "http://localhost/washers/panasonic-na-lx129dl/"
       ],
-      "numberOfRuns": 2,
+      "numberOfRuns": 3,
       "settings": {
         "preset": "desktop",
         "skipAudits": ["uses-http2"]
