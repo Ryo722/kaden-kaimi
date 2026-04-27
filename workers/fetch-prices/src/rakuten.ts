@@ -4,9 +4,17 @@
  * 仕様: docs/api-integration.md「楽天ウェブサービス（商品検索 API）」
  *
  * - itemCode が指定された場合は直接ルックアップ
- * - 未指定なら modelNumber を keyword 検索
+ * - 未指定なら modelNumber を keyword 検索（brandDisplayName 指定時は "ブランド名 品番"）
  * - hits=5 を上位価格昇順で取得し、min / avg / available を集約
  * - リトライ・バックオフは fetchWithRetry に委譲（429 / 5xx / network）
+ *
+ * フォールバック挙動（spec: 20260426-rakuten-zerohit-final-check）:
+ * 楽天 API は機種によって brand 名併記でも 0 件のままの場合がある
+ * （例: panasonic-na-lx129dl、2026-04-27 観測。Yahoo! は ¥220k で実機ヒット）。
+ * その場合 `searchRakuten` は `null` を返し、pipeline 側で
+ * `rakutenMin: null / rakutenAvg: null` のまま PriceRecord を成立させる
+ * （Yahoo! 単独でも片肺で書き込み可能）。
+ * 楽天 0 件は障害ではなく許容される定常状態として扱う。
  */
 
 import { fetchWithRetry, FetchError } from "./http";
