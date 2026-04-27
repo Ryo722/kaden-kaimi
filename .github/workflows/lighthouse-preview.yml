@@ -201,3 +201,8 @@ jobs:
           name: lighthouse-preview-reports${{ steps.cf-build.outputs.is_fallback == 'true' && '-fallback' || '' }}
           path: .lighthouseci/
           retention-days: 14
+          # `.lighthouseci/` 自体が dot 始まりのため、upload-artifact@v4 のデフォルト
+          # （hidden パス除外）で glob から脱落し "No files were found" warning が出る。
+          # include-hidden-files=true で対象に含める。配下の lhr-*.json/html 等は
+          # 機密情報を含まない計測結果のみ。
+          include-hidden-files: true

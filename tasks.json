@@ -117,15 +117,15 @@
       "id": "T-008",
       "title": "Upload Lighthouse artifacts ステップの no-files warning を解消",
       "spec_ref": null,
-      "state": "pending",
-      "next_action": "lhci autorun の出力先を調査し、`.lighthouseci/` への成果物保存（または upload-artifact の path 修正）を検討する。受け入れ条件は『run 後に lighthouse-preview-reports artifact が作成される』。",
-      "next_action_type": "investigate",
-      "stop_reason": "PR #6 マージ後の run 24979704717 の Upload ステップで `##[warning]No files were found with the provided path: .lighthouseci/. No artifacts will be uploaded.` が発生。Lighthouse 計測自体は 6 runs 全成功で assertion も pass しているが、artifact が保存されないため debug 困難。PR #4（旧 spec）の workflow 新設時から潜在していた問題で、PR #6（Check Runs polling 切替）の受け入れ条件には含まれないため別タスクで扱う。",
+      "state": "in_progress",
+      "next_action": "PR マージ後、Lighthouse CI (preview URL) workflow の run で artifact `lighthouse-preview-reports` が GitHub Actions に保存されることを実機確認する。",
+      "next_action_type": "verify",
+      "stop_reason": "原因特定: lhci 側ではなく `actions/upload-artifact@v4` の挙動。v4 はデフォルトで dot 始まりパス（hidden file/dir）を glob から除外する仕様で、計測対象ディレクトリ `.lighthouseci/` 自体が `.` で始まるため対象から脱落していた。lhci autorun は `Done running autorun.` で正常終了しており `.lighthouseci/lhr-*.json/html` 等は生成済み（ローカル実機で確認）。修正: workflow の Upload Lighthouse artifacts ステップに `include-hidden-files: true` を追加。",
       "owner": null,
       "acceptance_ref": null,
       "risk_tier": "小",
       "depends_on": [],
-      "updated_at": "2026-04-27T16:26:00+09:00",
+      "updated_at": "2026-04-27T17:30:00+09:00",
       "updated_by": "claude"
     }
   ]
