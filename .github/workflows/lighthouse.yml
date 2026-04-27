@@ -1,8 +1,6 @@
-name: Lighthouse CI
+name: Lighthouse CI (PR / staticDistDir)
 
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
 
@@ -41,7 +39,7 @@ jobs:
       - name: Run Lighthouse CI
         run: pnpm exec lhci autorun
         env:
-          LHCI_GITHUB_APP_TOKEN: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') && secrets.LHCI_GITHUB_APP_TOKEN || '' }}
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
 
       - name: Upload Lighthouse artifacts
         if: always()

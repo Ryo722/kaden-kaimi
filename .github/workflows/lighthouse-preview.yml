@@ -1,0 +1,208 @@
+name: Lighthouse CI (preview URL)
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # JST 04:00（UTC 19:00）— Workers cron（JST 05:00）の前に走らせる
+    - cron: '0 19 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: lighthouse-preview-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  checks: read
+
+jobs:
+  lighthouse-preview:
+    name: Lighthouse on Cloudflare Pages preview URL
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Resolve target SHA
+        id: sha
+        run: |
+          # schedule / workflow_dispatch では origin/main の HEAD を対象にする
+          # push の場合は github.sha がそのまま対象 SHA になる
+          if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            sha=$(git rev-parse origin/main)
+          else
+            sha="${{ github.sha }}"
+          fi
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "Target SHA: $sha"
+
+      - name: Wait for Cloudflare Pages build
+        id: cf-build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ steps.sha.outputs.sha }}
+          # 計測 URL: CF Pages の標準動作で main HEAD 最新成功ビルドにエイリアスされる本番 URL。
+          # Check Runs API は preview URL を含まないため固定 URL で計測する（SHA 一致は check_run で保証）。
+          PAGES_URL: https://kaden-kaimi.pages.dev
+        run: |
+          set -uo pipefail
+
+          # 該当 check_run（cloudflare-workers-and-pages app の "Cloudflare Pages"）のうち
+          # 最新の 1 件を JSON で返す。存在しなければ空文字。
+          # 注: 同一 SHA に複数 check_run（再実行等）がある場合は started_at の降順で最新を選ぶ。
+          # started_at が null の極端なケースは id を補助キーにして安定ソートする。
+          # gh api のエラー（401/403/429 など）は stderr をジョブログに残し、空文字を返して
+          # 上位の poll_check_run 側で「未登録扱い」として継続させる（HIGH 修正: 認証/レート問題が
+          # 完全に握りつぶされる旧実装からの改善）。
+          fetch_check_run() {
+            local out
+            if ! out=$(gh api "repos/$REPO/commits/$SHA/check-runs?per_page=100" --jq \
+              '[.check_runs[] | select(.app.slug == "cloudflare-workers-and-pages" and .name == "Cloudflare Pages")]
+                | sort_by([.started_at // "0000-00-00T00:00:00Z", .id])
+                | reverse
+                | .[0] // empty' 2>&1); then
+              echo "::warning::gh api check-runs failed: $out" >&2
+              echo ""
+              return 0
+            fi
+            echo "$out"
+          }
+
+          # 戻り値:
+          #   0 = success（計測続行）
+          #   1 = まだ完了していない（polling 継続）
+          #   2 = CF ビルド失敗（workflow を fail させる）
+          #   3 = check_run が未登録（空配列または gh api エラー。polling 継続、最終的に fallback）
+          poll_check_run() {
+            local check_run status conclusion
+            check_run=$(fetch_check_run)
+
+            if [ -z "$check_run" ]; then
+              echo "  check_run not yet present for SHA $SHA" >&2
+              return 3
+            fi
+
+            status=$(echo "$check_run" | jq -r '.status // empty')
+            conclusion=$(echo "$check_run" | jq -r '.conclusion // empty')
+            echo "  check_run status=$status conclusion=$conclusion" >&2
+
+            case "$status" in
+              queued|in_progress)
+                return 1
+                ;;
+              completed)
+                case "$conclusion" in
+                  success)
+                    return 0
+                    ;;
+                  failure|timed_out|cancelled|action_required|stale|neutral|skipped)
+                    echo "::error::Cloudflare Pages build conclusion=$conclusion for SHA $SHA"
+                    return 2
+                    ;;
+                  *)
+                    echo "::error::Unknown Cloudflare Pages conclusion=$conclusion for SHA $SHA"
+                    return 2
+                    ;;
+                esac
+                ;;
+              *)
+                echo "::warning::Unknown check_run status=$status; treating as in_progress"
+                return 1
+                ;;
+            esac
+          }
+
+          # 主ループ: 30s 間隔で最大 10 回（合計 5 分）ポーリング
+          # 注: poll_check_run は意図的に非ゼロ終了を返す。`|| rc=$?` で受けることで
+          # 将来 `set -e` を有効化した場合でも壊れないようにする。
+          result=""
+          is_fallback=false
+          max_attempts=10
+          interval=30
+          for i in $(seq 1 $max_attempts); do
+            echo "Attempt $i/$max_attempts: polling check_runs for $SHA"
+            rc=0
+            poll_check_run || rc=$?
+            case $rc in
+              0) result="success"; break ;;
+              2) exit 1 ;;
+              1|3) sleep $interval ;;
+            esac
+          done
+
+          # フォールバック段: 60s 待機 → もう 1 回 polling
+          if [ -z "$result" ]; then
+            echo "::warning::CF Pages check_run not in success state after $((max_attempts*interval))s; sleeping 60s before retry"
+            sleep 60
+            rc=0
+            poll_check_run || rc=$?
+            case $rc in
+              0) result="success" ;;
+              2) exit 1 ;;
+              1|3)
+                echo "::warning::CF Pages check_run still not ready; falling back to $PAGES_URL (SHA $SHA may differ from deployed build)"
+                result="fallback"
+                is_fallback=true
+                ;;
+            esac
+          fi
+
+          echo "measure_url=$PAGES_URL" >> "$GITHUB_OUTPUT"
+          echo "is_fallback=$is_fallback" >> "$GITHUB_OUTPUT"
+          echo "Selected URL: $PAGES_URL (fallback=$is_fallback)"
+          {
+            echo "## Lighthouse preview target"
+            echo ""
+            echo "- Measure URL: \`$PAGES_URL\`"
+            echo "- SHA: \`$SHA\`"
+            echo "- Fallback used: \`$is_fallback\`"
+            echo ""
+            if [ "$is_fallback" = "true" ]; then
+              echo "> Fallback was used because the Cloudflare Pages check_run was not visible within the polling window."
+              echo "> The measured site may not correspond exactly to the target SHA."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Run Lighthouse CI on preview URL
+        # 注: cf-build step が exit 1 した場合（CF ビルド失敗）はジョブ失敗状態となり、
+        # if: always() を付与していないため本ステップは走らない。
+        # 将来 if: always() を付ける改修をする場合、MEASURE_URL が空文字になりうる
+        # 点を考慮し空チェックを追加すること。
+        env:
+          MEASURE_URL: ${{ steps.cf-build.outputs.measure_url }}
+          # status check 連携は push trigger 時のみ意味があるため、それ以外では空文字を渡す
+          LHCI_GITHUB_APP_TOKEN: ${{ github.event_name == 'push' && secrets.LHCI_GITHUB_APP_TOKEN || '' }}
+        run: |
+          pnpm exec lhci autorun \
+            --config=.lighthouserc.preview.json \
+            --collect.url="${MEASURE_URL%/}/" \
+            --collect.url="${MEASURE_URL%/}/washers/panasonic-na-lx129dl/"
+
+      - name: Upload Lighthouse artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-preview-reports${{ steps.cf-build.outputs.is_fallback == 'true' && '-fallback' || '' }}
+          path: .lighthouseci/
+          retention-days: 14
+          # `.lighthouseci/` 自体が dot 始まりのため、upload-artifact@v4 のデフォルト
+          # （hidden パス除外）で glob から脱落し "No files were found" warning が出る。
+          # include-hidden-files=true で対象に含める。配下の lhr-*.json/html 等は
+          # 機密情報を含まない計測結果のみ。
+          include-hidden-files: true

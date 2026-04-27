@@ -102,3 +102,32 @@
 - **Workers Cron 失敗**: 3 回リトライ、最終失敗は通知のみ（データ欠損を許容）
 - **外部 API レート超過**: 指数バックオフ、1 日以内の再試行で自動復旧
 - **GitHub API 障害**: 当日データは欠損扱い、翌日再投入を試みる
+
+## CI/CD 構成
+
+### Lighthouse CI（2 段構え）
+
+性能計測は「再現性の高い静的計測」と「実 CDN 配信下での計測」を分離し、目的別に 2 つの workflow で運用する。
+
+| 段 | workflow | トリガ | 計測対象 | 設定 |
+|---|---|---|---|---|
+| 1 段目 | `.github/workflows/lighthouse.yml` | `pull_request` のみ | `dist/client` を `staticDistDir` で計測 | `.lighthouserc.json` |
+| 2 段目 | `.github/workflows/lighthouse-preview.yml` | `push` (main) / `schedule` (JST 04:00) / `workflow_dispatch` | `https://kaden-kaimi.pages.dev`（main 最新成功ビルドのエイリアス）を実 CDN 経由で計測 | `.lighthouserc.preview.json` |
+
+**しきい値**は両段で共通（Performance ≥ 90 / Accessibility ≥ 95 / Best Practices ≥ 90 / SEO ≥ 90）。`numberOfRuns: 3` で median を採用し flake 耐性を確保する。
+
+**役割の違い**:
+- 1 段目: PR ごとに走り、ビルド成果物の劣化を即座に検出する。staticDistDir は HTTP/1.1 のため `uses-http2` audit を skip する。
+- 2 段目: main ブランチのデプロイ後と nightly で走り、CF の HTTP/2/3 配信・CDN キャッシュを含めた実環境スコアを観測する。`uses-http2` は skip しない。
+
+**ビルド完了の確認**は GitHub Check Runs API を polling する設計（30s × 10 回 = 最大 5 分、+ 60s 再試行）。CF Pages の GitHub App `cloudflare-workers-and-pages` は Check Runs API にしか書き込まないため、`gh api repos/$REPO/commits/$SHA/check-runs` から `name: "Cloudflare Pages"` の check_run を取得し、`status: completed` かつ `conclusion: success` で抜ける。`failure` / `timed_out` / `cancelled` / `action_required` / `stale` / `neutral` / `skipped` のいずれかなら workflow を fail させる（CF ビルドが失敗した SHA を Lighthouse で計測しても無意味なため）。
+
+**計測 URL は `https://kaden-kaimi.pages.dev` 固定**。Check Runs API の `details_url` は CF dashboard 画面の URL であり deployment 単体の preview URL を含まないが、CF Pages の標準動作で `kaden-kaimi.pages.dev` は常に main 最新成功ビルドにエイリアスされるため、SHA 一致を check_run で保証した上で固定 URL を計測すれば実用上問題ない。
+
+**fallback 経路**: CF 側の GitHub App 障害や API 仕様変更で check_run が完全に出ない極端なケース用に、`is_fallback=true` フラグ付きで `https://kaden-kaimi.pages.dev` を計測する経路を残す。fallback 時はアーティファクト名に `-fallback` サフィックスが付き、job summary でも識別可能。
+
+**nightly の cron** は JST 04:00（UTC 19:00）に設定。Workers の価格更新 cron（JST 05:00）の前に走らせ、計測時点のデータが「前日 cron で更新されたもの」で安定するようにしている。
+
+### バリデーション CI
+
+`.github/workflows/ci.yml` で `pnpm validate` / `pnpm typecheck` / `pnpm test` を PR 時に走らせる。data/JSON のスキーマ違反は CI で reject される。

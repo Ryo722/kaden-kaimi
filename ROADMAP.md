@@ -99,3 +99,6 @@
 | 2026-04-24 | Node 22.12+ にピン（`.nvmrc=22`、engines `>=22.12.0`） | Astro 6 の Node 要件に合わせる。初回 Cloudflare Pages ビルドが v20 で失敗したため |
 | 2026-04-24 | Lighthouse CI は静的ビルドを lhci 内蔵 server で計測 | 本番直接計測よりランナー地理差・CDN 負荷に影響されず再現性が高い。`uses-http2` のみスキップ |
 | 2026-04-24 | Phase 1 完了、Phase 2 に遷移 | 本番公開済み、CI/Lighthouse 緑、5機種で5軸ダッシュボード動作 |
+| 2026-04-27 | Lighthouse CI を 2 段構え化（PR=staticDistDir / main+nightly=preview URL） | PR では deps・ビルド変動を厳密検出（lhci 内蔵 server）、main push と nightly schedule では本番経路（CF Pages）の劣化を検出。役割を分離して計測再現性と本番監視を両立 |
+| 2026-04-27 | preview URL の deployment polling を Check Runs API へ切替 | CF Pages の GitHub App `cloudflare-workers-and-pages` は Check Runs API のみ書き込み、Deployments/Statuses API には書かないことが実機で判明。SHA 一致を厳密保証する経路は Check Runs polling のみ。空配列時の `pages.dev` fallback は degraded セーフティネットとして残す |
+| 2026-04-27 | Upload Lighthouse artifacts に `include-hidden-files: true` を追加 | `actions/upload-artifact@v4` はデフォルトで dot 始まりパス（`.lighthouseci/`）を glob から除外する仕様。これが no-files warning と artifact 喪失の根本原因だった。計測結果に機密情報なし、hidden 制限解除で問題なし |
