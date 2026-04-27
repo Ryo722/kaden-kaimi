@@ -24,14 +24,14 @@
       "title": "preview URL deployment polling ロジック実装",
       "spec_ref": "20260426-lighthouse-ci-two-tier#ADDED-2",
       "state": "implemented",
-      "next_action": "CF Pages の GitHub App で Deployments 通知が有効か確認、無効なら有効化（現状は fallback 経路で動作）",
-      "next_action_type": "ops",
-      "stop_reason": "2026-04-27 時点で gh api /deployments が空配列を返す。CF Pages 側の GitHub App 設定を要確認。",
+      "next_action": "Check Runs API への切替を別 spec で検討する（CF Pages は Deployments API 非対応のため、現実装は構造的に常に fallback 経路で動作する）",
+      "next_action_type": "spec",
+      "stop_reason": "2026-04-27 main マージ後に判明: CF Pages の GitHub App (cloudflare-workers-and-pages) は Check Runs API のみを使用し、Deployments API および Statuses API には書かない（GitHub App の実装仕様、CF dashboard 側で変更不可）。よって本 spec の polling 設計は構造的に成立せず、毎回 https://kaden-kaimi.pages.dev への fallback 経路で計測される。実害は限定的（pages.dev は常に main HEAD の最新ビルドにエイリアスされるため、SHA がほぼ一致する）だが、SHA 一致の厳密保証は不可。改善案: 後続 spec で gh api repos/.../commits/SHA/check-runs を polling し、cloudflare-workers-and-pages app の Cloudflare Pages check が conclusion=success になるのを待つ方式へ切替。",
       "owner": null,
       "acceptance_ref": "20260426-lighthouse-ci-two-tier#受け入れ条件-2",
       "risk_tier": "中",
       "depends_on": ["T-001"],
-      "updated_at": "2026-04-27T13:49:00+09:00",
+      "updated_at": "2026-04-27T14:25:00+09:00",
       "updated_by": "claude"
     },
     {
