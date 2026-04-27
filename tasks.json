@@ -1,0 +1,83 @@
+{
+  "schema_version": "1.0",
+  "active_specs": [
+    "20260426-lighthouse-ci-two-tier"
+  ],
+  "tasks": [
+    {
+      "id": "T-001",
+      "title": "lighthouse-preview.yml 新規 workflow を作成",
+      "spec_ref": "20260426-lighthouse-ci-two-tier#ADDED-1",
+      "state": "pending",
+      "next_action": "main push と nightly schedule トリガを設定、preview URL 取得ロジックを書く",
+      "next_action_type": "code",
+      "stop_reason": null,
+      "owner": null,
+      "acceptance_ref": "20260426-lighthouse-ci-two-tier#受け入れ条件-2",
+      "risk_tier": "中",
+      "depends_on": [],
+      "updated_at": "2026-04-26T13:00:00+09:00",
+      "updated_by": "spec-task"
+    },
+    {
+      "id": "T-002",
+      "title": "preview URL deployment polling ロジック実装",
+      "spec_ref": "20260426-lighthouse-ci-two-tier#ADDED-2",
+      "state": "pending",
+      "next_action": "gh api /repos/.../deployments と statuses でポーリング、最大5分、固定sleep 60sフォールバック",
+      "next_action_type": "code",
+      "stop_reason": null,
+      "owner": null,
+      "acceptance_ref": "20260426-lighthouse-ci-two-tier#受け入れ条件-2",
+      "risk_tier": "中",
+      "depends_on": ["T-001"],
+      "updated_at": "2026-04-26T13:00:00+09:00",
+      "updated_by": "spec-task"
+    },
+    {
+      "id": "T-003",
+      "title": "lighthouserc.preview.json を作成（uses-http2 skip 解除）",
+      "spec_ref": "20260426-lighthouse-ci-two-tier#ADDED-3",
+      "state": "pending",
+      "next_action": "preview URL 用 lighthouse 設定、しきい値は PR と同一",
+      "next_action_type": "code",
+      "stop_reason": null,
+      "owner": null,
+      "acceptance_ref": "20260426-lighthouse-ci-two-tier#受け入れ条件-5",
+      "risk_tier": "小",
+      "depends_on": [],
+      "updated_at": "2026-04-26T13:00:00+09:00",
+      "updated_by": "spec-task"
+    },
+    {
+      "id": "T-004",
+      "title": "既存 lighthouse.yml を PR-only に発火条件変更 + numberOfRuns 3化",
+      "spec_ref": "20260426-lighthouse-ci-two-tier#MODIFIED-1",
+      "state": "pending",
+      "next_action": "on: pull_request のみに、.lighthouserc.json の numberOfRuns を 2→3",
+      "next_action_type": "code",
+      "stop_reason": null,
+      "owner": null,
+      "acceptance_ref": "20260426-lighthouse-ci-two-tier#受け入れ条件-1",
+      "risk_tier": "小",
+      "depends_on": [],
+      "updated_at": "2026-04-26T13:00:00+09:00",
+      "updated_by": "spec-task"
+    },
+    {
+      "id": "T-005",
+      "title": "README/docs に 2 段構成の方針を明記",
+      "spec_ref": "20260426-lighthouse-ci-two-tier#MODIFIED-3",
+      "state": "pending",
+      "next_action": "PR=staticDistDir / main+nightly=preview URL の役割を docs に追記",
+      "next_action_type": "code",
+      "stop_reason": null,
+      "owner": null,
+      "acceptance_ref": null,
+      "risk_tier": "小",
+      "depends_on": ["T-001", "T-004"],
+      "updated_at": "2026-04-26T13:00:00+09:00",
+      "updated_by": "spec-task"
+    }
+  ]
+}
