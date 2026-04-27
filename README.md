@@ -77,7 +77,8 @@ pnpm exec lhci autorun  # Lighthouse CI（要: pnpm build 済み）
 
 > **Lighthouse CI（2 段構え）**:
 > - PR では `.github/workflows/lighthouse.yml` が `dist/client` を `staticDistDir` で計測（HTTP/1.1 のため `uses-http2` audit は skip）
-> - main push / nightly（JST 04:00）/ 手動実行では `.github/workflows/lighthouse-preview.yml` が Cloudflare Pages の Production URL を実 CDN 経由で計測（HTTP/2/3 配信のため `uses-http2` は skip しない）
+> - main push / nightly（JST 04:00）/ 手動実行では `.github/workflows/lighthouse-preview.yml` が `https://kaden-kaimi.pages.dev`（main 最新成功ビルドのエイリアス）を実 CDN 経由で計測（HTTP/2/3 配信のため `uses-http2` は skip しない）
+> - 2 段目は GitHub Check Runs API で CF Pages のビルド完了（`conclusion: success`）を待ってから計測する。CF ビルド失敗時は workflow も fail
 > - しきい値は両段共通（P90 / A95 / BP90 / SEO90）、`numberOfRuns: 3` で median 採用
 > - 詳細: [docs/architecture.md#cicd-構成](./docs/architecture.md#cicd-構成)
 
