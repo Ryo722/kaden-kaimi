@@ -117,16 +117,18 @@
       "id": "T-008",
       "title": "Upload Lighthouse artifacts ステップの no-files warning を解消",
       "spec_ref": null,
-      "state": "in_progress",
-      "next_action": "PR マージ後、Lighthouse CI (preview URL) workflow の run で artifact `lighthouse-preview-reports` が GitHub Actions に保存されることを実機確認する。",
-      "next_action_type": "verify",
-      "stop_reason": "原因特定: lhci 側ではなく `actions/upload-artifact@v4` の挙動。v4 はデフォルトで dot 始まりパス（hidden file/dir）を glob から除外する仕様で、計測対象ディレクトリ `.lighthouseci/` 自体が `.` で始まるため対象から脱落していた。lhci autorun は `Done running autorun.` で正常終了しており `.lighthouseci/lhr-*.json/html` 等は生成済み（ローカル実機で確認）。修正: workflow の Upload Lighthouse artifacts ステップに `include-hidden-files: true` を追加。",
+      "state": "implemented",
+      "next_action": null,
+      "next_action_type": null,
+      "stop_reason": null,
       "owner": null,
       "acceptance_ref": null,
       "risk_tier": "小",
       "depends_on": [],
-      "updated_at": "2026-04-27T17:30:00+09:00",
-      "updated_by": "claude"
+      "updated_at": "2026-04-27T18:00:00+09:00",
+      "updated_by": "claude",
+      "verified_at": "2026-04-27T17:15:00+09:00",
+      "verified_ref": "GitHub Actions run 24983832458 (commit 6b1cb9d, PR #8 マージ起動の push trigger): conclusion=success。`gh api repos/Ryo722/kaden-kaimi/actions/runs/24983832458/artifacts` で total_count=1、artifact name=`lighthouse-preview-reports`、size_in_bytes=1602747、expired=false を確認。Upload Lighthouse artifacts ステップログで `include-hidden-files: true` 反映 → `With the provided path, there will be 14 files uploaded` → `Uploaded bytes 1602747` → `Finalizing artifact upload`（SHA256 digest 7bbbc3d079c3f8a8b09a69a44c7db2336f64180c4f624ceabe6c7cbe04f0041e）。run 24979704717 で発生していた `##[warning]No files were found with the provided path: .lighthouseci/.` warning は完全消失。"
     }
   ]
 }
