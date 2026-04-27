@@ -1,0 +1,33 @@
+# Cloudflare Workers ローカル開発用シークレットテンプレート
+#
+# このファイルは `workers/fetch-prices/wrangler.toml` と同じディレクトリに置く必要がある
+# （wrangler の仕様: .dev.vars は wrangler.toml と同階層）
+#
+# 使い方:
+#   1. このファイルを `.dev.vars` としてコピー（`.dev.vars` は .gitignore 済み）
+#      $ cp .dev.vars.example .dev.vars
+#   2. 各 PLACEHOLDER を実際のキーに置換
+#   3. ファイルは絶対にコミットしない
+#
+# 本番（Cloudflare Workers）への登録は `wrangler secret put` を使う:
+#   $ pnpm --filter kaden-kaimi-fetch-prices secret:put:rakuten
+#   $ pnpm --filter kaden-kaimi-fetch-prices secret:put:yahoo
+#   $ pnpm --filter kaden-kaimi-fetch-prices secret:put:github
+#
+# 公開設定（GITHUB_OWNER 等）は wrangler.toml の [vars] で管理しているため、
+# このファイルにはシークレットのみを記載する。
+
+# 楽天ウェブサービス applicationId（20 桁の数字）
+# 取得元: https://webservice.rakuten.co.jp/
+RAKUTEN_APP_ID=PLACEHOLDER_RAKUTEN_APPLICATION_ID
+
+# Yahoo! デベロッパーネットワーク Client ID（dj00... で始まる文字列）
+# 取得元: https://developer.yahoo.co.jp/start/
+YAHOO_CLIENT_ID=PLACEHOLDER_YAHOO_CLIENT_ID
+
+# GitHub Fine-grained PAT（github_pat_... で始まる文字列）
+# 権限: Contents: Read and write、対象リポジトリ: Ryo722/kaden-kaimi のみ
+GITHUB_TOKEN=PLACEHOLDER_GITHUB_FINE_GRAINED_PAT
+
+# ドライラン用: 1 機種だけ処理対象にしたいときにアンコメント
+# TARGET_MODEL_ID=panasonic-na-lx129dl

@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0",
+  "archived_specs": [
+    {
+      "spec_id": "20260426-rakuten-zerohit-final-check",
+      "archived_at": "2026-04-27",
+      "reason": "implemented (受け入れ条件 3 件すべて達成、楽天 0 件は許容される定常状態として確定)"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "T-006",
+      "title": "phase-2-dryrun ブランチで再ドライラン実施",
+      "spec_ref": "20260426-rakuten-zerohit-final-check#MODIFIED-1",
+      "state": "done",
+      "next_action": null,
+      "next_action_type": null,
+      "stop_reason": null,
+      "owner": "user",
+      "acceptance_ref": "20260426-rakuten-zerohit-final-check#受け入れ条件-1",
+      "risk_tier": "中",
+      "depends_on": [],
+      "result_ref": "docs/devlog/2026-04-27.md#p25e5-再ドライラン結果 / commit 8322f65",
+      "updated_at": "2026-04-27T12:45:00+09:00",
+      "updated_by": "session"
+    },
+    {
+      "id": "T-007",
+      "title": "rakuten.ts の docstring に 0件時フォールバック挙動を明記",
+      "spec_ref": "20260426-rakuten-zerohit-final-check#ADDED-1",
+      "state": "done",
+      "next_action": null,
+      "next_action_type": null,
+      "stop_reason": null,
+      "owner": "session",
+      "acceptance_ref": "20260426-rakuten-zerohit-final-check#受け入れ条件-2",
+      "risk_tier": "小",
+      "depends_on": [],
+      "result_ref": "workers/fetch-prices/src/rakuten.ts (docstring 冒頭にフォールバック挙動セクション追加)",
+      "updated_at": "2026-04-27T12:45:00+09:00",
+      "updated_by": "session"
+    },
+    {
+      "id": "T-008",
+      "title": "再ドライラン結果を devlog に記録",
+      "spec_ref": "20260426-rakuten-zerohit-final-check#MODIFIED-2",
+      "state": "done",
+      "next_action": null,
+      "next_action_type": null,
+      "stop_reason": null,
+      "owner": "session",
+      "acceptance_ref": "20260426-rakuten-zerohit-final-check#受け入れ条件-2",
+      "risk_tier": "小",
+      "depends_on": ["T-006"],
+      "result_ref": "docs/devlog/2026-04-27.md",
+      "updated_at": "2026-04-27T12:45:00+09:00",
+      "updated_by": "session"
+    }
+  ]
+}

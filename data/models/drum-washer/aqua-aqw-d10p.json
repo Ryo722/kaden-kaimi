@@ -1,0 +1,32 @@
+{
+  "id": "aqua-aqw-d10p",
+  "brand": "aqua",
+  "modelName": "まっ直ぐドラム AQW-D10P",
+  "modelNumber": "AQW-D10P",
+  "category": "drum-washer",
+  "generation": 2023,
+  "announcementDate": "2023-09-15",
+  "releaseDate": "2023-11-01",
+  "msrp": 198000,
+  "discontinued": false,
+  "predecessorId": null,
+  "successorId": null,
+  "specs": {
+    "washCapacityKg": 10,
+    "dryCapacityKg": 5,
+    "annualKwh": 225,
+    "waterPerCycleL": 92,
+    "widthMm": 597,
+    "heightMm": 945,
+    "depthMm": 720,
+    "weightKg": 70,
+    "features": [
+      "quiet-mode"
+    ]
+  },
+  "externalIds": {
+    "rakutenItemCode": null,
+    "yahooItemCode": null
+  },
+  "imageUrl": "/images/models/aqua-aqw-d10p.webp"
+}

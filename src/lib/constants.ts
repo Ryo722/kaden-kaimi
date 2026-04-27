@@ -1,4 +1,5 @@
-import type { BrandId } from "@/types";
+import type { BrandId } from "../types";
+import type { Category } from "../types/schema";
 
 export const BRAND_HUE_DEGREES: Record<BrandId, number> = {
   panasonic: 210,
@@ -6,6 +7,17 @@ export const BRAND_HUE_DEGREES: Record<BrandId, number> = {
   toshiba: 265,
   sharp: 150,
   aqua: 190,
+};
+
+// 楽天 / Yahoo! の keyword 検索精度を上げるためにブランド名を併記する用の表示名。
+// 値は data/brands.json の displayName と一致させる。
+// ブランドを追加した際は brands.json と本マップの両方を更新する必要がある。
+export const BRAND_DISPLAY_NAMES: Record<BrandId, string> = {
+  panasonic: "パナソニック",
+  hitachi: "日立",
+  toshiba: "東芝",
+  sharp: "シャープ",
+  aqua: "AQUA",
 };
 
 export const AXIS6_FEATURE_LABELS: Record<string, string> = {
@@ -133,3 +145,11 @@ export const AXIS6_ROI_VERDICT_SCORE = {
   "no-benefit": 0,
 } as const;
 export const AXIS6_TOP_N = 3;
+
+// 価格取得時の下限フィルタ。
+// 楽天 / Yahoo! の keyword 検索は品番が含まれる関連商品（部品・取説等）も拾うため、
+// カテゴリごとの実機相場の下限を設定し、それ未満のヒットは除外する。
+// 単位: 円（税込）。
+export const CATEGORY_PRICE_FLOOR: Record<Category, number> = {
+  "drum-washer": 50000,
+};

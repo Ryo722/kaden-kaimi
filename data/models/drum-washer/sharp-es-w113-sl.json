@@ -1,0 +1,35 @@
+{
+  "id": "sharp-es-w113-sl",
+  "brand": "sharp",
+  "modelName": "ES-W113-SL",
+  "modelNumber": "ES-W113-SL",
+  "category": "drum-washer",
+  "generation": 2023,
+  "announcementDate": "2023-08-10",
+  "releaseDate": "2023-10-05",
+  "msrp": 318000,
+  "discontinued": false,
+  "predecessorId": null,
+  "successorId": null,
+  "specs": {
+    "washCapacityKg": 11,
+    "dryCapacityKg": 6,
+    "annualKwh": 192,
+    "waterPerCycleL": 76,
+    "widthMm": 640,
+    "heightMm": 1039,
+    "depthMm": 728,
+    "weightKg": 76,
+    "features": [
+      "auto-detergent",
+      "smart-app",
+      "quiet-mode",
+      "sharp:plasmacluster"
+    ]
+  },
+  "externalIds": {
+    "rakutenItemCode": null,
+    "yahooItemCode": null
+  },
+  "imageUrl": "/images/models/sharp-es-w113-sl.webp"
+}

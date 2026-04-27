@@ -1,0 +1,34 @@
+{
+  "id": "sharp-es-v11a",
+  "brand": "sharp",
+  "modelName": "ES-V11A",
+  "modelNumber": "ES-V11A",
+  "category": "drum-washer",
+  "generation": 2023,
+  "announcementDate": "2023-06-15",
+  "releaseDate": "2023-08-30",
+  "msrp": 285000,
+  "discontinued": false,
+  "predecessorId": null,
+  "successorId": null,
+  "specs": {
+    "washCapacityKg": 11,
+    "dryCapacityKg": 6,
+    "annualKwh": 198,
+    "waterPerCycleL": 78,
+    "widthMm": 640,
+    "heightMm": 1045,
+    "depthMm": 728,
+    "weightKg": 75,
+    "features": [
+      "auto-detergent",
+      "quiet-mode",
+      "sharp:plasmacluster"
+    ]
+  },
+  "externalIds": {
+    "rakutenItemCode": null,
+    "yahooItemCode": null
+  },
+  "imageUrl": "/images/models/sharp-es-v11a.webp"
+}

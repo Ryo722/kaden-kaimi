@@ -73,7 +73,10 @@
 ## 参照ドキュメント
 
 - `ROADMAP.md` — フェーズ計画と成功指標
-- `TaskBreakdown.md` — Phase 1 (MVP) の詳細タスク
+- `tasks.json` — 実行台帳（spec-task / tasks-master 連携、Phase 3 から）
+- `decision-log.md` — 重要決定の記録（Phase 5 で導入）
+- `openspec/proposals/` — 変更仕様（spec-task）
+- `TaskBreakdown.md` / `TaskBreakdown-phase2.md` — **凍結中**（参照のみ、新規追記禁止）
 - `docs/architecture.md` — システム構成と技術選定理由
 - `docs/data-schema.md` — JSON スキーマ定義
 - `docs/logic-specs.md` — 5軸計算ロジック仕様
@@ -82,8 +85,14 @@
 
 ## ワークフロー
 
-1. タスク着手前に `TaskBreakdown.md` で対象タスクを確認
+1. タスク着手前に `tasks.json` の state-first ダッシュボードで現状確認（`TaskBreakdown.md` は凍結中・参照のみ）
 2. 実装前に関連設計書を必読（特に `logic-specs.md`、`data-schema.md`）
 3. 変更ごとに単体テスト実行
 4. Verify フェーズで完了条件チェック（グローバル CLAUDE.md 準拠）
 5. 日次進捗を `docs/devlog/YYYY-MM-DD.md` に記録（PR 単位 or 30 分超作業時）
+6. 仕様変更が必要なら `/spec-task` で `openspec/proposals/<YYYYMMDD-id>/spec.md` を起こし、`tasks.json` に反映
+7. 単発修正は `/tasks-master` で task 追加（spec 不要・30 分未満）
+
+### tasks.json 退避ルール
+- `active_specs` が **3 件以上**、または spec が `implemented/archived` 化したら、対応 task を `tasks.archived.json` へ移動
+- 退避時は `docs/devlog/<date>.md` に 1 行記録（spec id と task 数）
