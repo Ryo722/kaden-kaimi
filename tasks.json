@@ -83,31 +83,31 @@
       "id": "T-006",
       "title": "lighthouse-preview.yml を Check Runs API polling 方式に書き換え",
       "spec_ref": "20260427-lighthouse-check-runs-polling#MODIFIED-1",
-      "state": "pending",
-      "next_action": "Wait for Cloudflare Pages build ステップを gh api commits/$SHA/check-runs polling に書き換え、permissions を checks: read に変更、conclusion 失敗系で workflow fail、空配列のみ既存 fallback 維持",
-      "next_action_type": "code",
+      "state": "implemented",
+      "next_action": "main マージ後、job summary で Fallback used: false を確認 / CF ビルド進行中 → success の遷移ログを確認",
+      "next_action_type": "verify",
       "stop_reason": null,
       "owner": null,
       "acceptance_ref": "20260427-lighthouse-check-runs-polling#受け入れ条件-1",
       "risk_tier": "中",
       "depends_on": [],
-      "updated_at": "2026-04-27T15:00:00+09:00",
-      "updated_by": "spec-task"
+      "updated_at": "2026-04-27T15:10:00+09:00",
+      "updated_by": "claude"
     },
     {
       "id": "T-007",
       "title": "docs/architecture.md と README.md の CI/CD 構成説明を更新",
       "spec_ref": "20260427-lighthouse-check-runs-polling#MODIFIED-2",
-      "state": "pending",
-      "next_action": "preview URL 解決方式の説明を Check Runs API polling ベースに書き換え、pages.dev 固定計測の理由も追記",
-      "next_action_type": "code",
+      "state": "implemented",
+      "next_action": null,
+      "next_action_type": null,
       "stop_reason": null,
       "owner": null,
       "acceptance_ref": "20260427-lighthouse-check-runs-polling#受け入れ条件-6",
       "risk_tier": "小",
       "depends_on": ["T-006"],
-      "updated_at": "2026-04-27T15:00:00+09:00",
-      "updated_by": "spec-task"
+      "updated_at": "2026-04-27T15:10:00+09:00",
+      "updated_by": "claude"
     }
   ]
 }
