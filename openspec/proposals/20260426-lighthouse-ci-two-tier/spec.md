@@ -1,9 +1,12 @@
 ---
 id: 20260426-lighthouse-ci-two-tier
 title: Lighthouse CI を 2 段構え化（PR=staticDistDir / main+nightly=preview URL）
-status: proposed
+status: archived
+archived_at: 2026-04-27
+archived_reason: "T-002 で判明した CF Pages の API 仕様（GitHub App は Check Runs API のみ使用）に対応するため、後継 spec 20260427-lighthouse-check-runs-polling で polling 方式を切替。本 spec は実装内容（lighthouse-preview.yml の新設、lhci の 2 段構成）の出典として残置するが、Deployments API polling 部分は新 spec で全面書き換え済。"
 created: 2026-04-26
 risk: 中
+superseded_by: 20260427-lighthouse-check-runs-polling
 deprecation_when: "Cloudflare Pages のネイティブ Lighthouse 統合が安定運用に乗り、自前 GitHub Actions が不要になった時点で archived"
 ---
 
