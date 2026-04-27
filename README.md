@@ -75,7 +75,11 @@ pnpm validate         # data/ JSON スキーマ検証
 pnpm exec lhci autorun  # Lighthouse CI（要: pnpm build 済み）
 ```
 
-> **Lighthouse CI メモ**: `.lighthouserc.json` の `skipAudits: ["uses-http2"]` は lhci 内蔵 server が HTTP/1.1 のみのため。Phase 2 で本番/プレビュー URL 計測に切り替える際は削除すること。
+> **Lighthouse CI（2 段構え）**:
+> - PR では `.github/workflows/lighthouse.yml` が `dist/client` を `staticDistDir` で計測（HTTP/1.1 のため `uses-http2` audit は skip）
+> - main push / nightly（JST 04:00）/ 手動実行では `.github/workflows/lighthouse-preview.yml` が Cloudflare Pages の Production URL を実 CDN 経由で計測（HTTP/2/3 配信のため `uses-http2` は skip しない）
+> - しきい値は両段共通（P90 / A95 / BP90 / SEO90）、`numberOfRuns: 3` で median 採用
+> - 詳細: [docs/architecture.md#cicd-構成](./docs/architecture.md#cicd-構成)
 
 ## ディレクトリ構成
 

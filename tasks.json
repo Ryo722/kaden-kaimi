@@ -1,0 +1,83 @@
+{
+  "schema_version": "1.0",
+  "active_specs": [
+    "20260426-lighthouse-ci-two-tier"
+  ],
+  "tasks": [
+    {
+      "id": "T-001",
+      "title": "lighthouse-preview.yml 新規 workflow を作成",
+      "spec_ref": "20260426-lighthouse-ci-two-tier#ADDED-1",
+      "state": "implemented",
+      "next_action": "PR 作成後、main マージで実 push 起動を確認する",
+      "next_action_type": "verify",
+      "stop_reason": null,
+      "owner": null,
+      "acceptance_ref": "20260426-lighthouse-ci-two-tier#受け入れ条件-2",
+      "risk_tier": "中",
+      "depends_on": [],
+      "updated_at": "2026-04-27T13:49:00+09:00",
+      "updated_by": "claude"
+    },
+    {
+      "id": "T-002",
+      "title": "preview URL deployment polling ロジック実装",
+      "spec_ref": "20260426-lighthouse-ci-two-tier#ADDED-2",
+      "state": "implemented",
+      "next_action": "CF Pages の GitHub App で Deployments 通知が有効か確認、無効なら有効化（現状は fallback 経路で動作）",
+      "next_action_type": "ops",
+      "stop_reason": "2026-04-27 時点で gh api /deployments が空配列を返す。CF Pages 側の GitHub App 設定を要確認。",
+      "owner": null,
+      "acceptance_ref": "20260426-lighthouse-ci-two-tier#受け入れ条件-2",
+      "risk_tier": "中",
+      "depends_on": ["T-001"],
+      "updated_at": "2026-04-27T13:49:00+09:00",
+      "updated_by": "claude"
+    },
+    {
+      "id": "T-003",
+      "title": "lighthouserc.preview.json を作成（uses-http2 skip 解除）",
+      "spec_ref": "20260426-lighthouse-ci-two-tier#ADDED-3",
+      "state": "implemented",
+      "next_action": "実 preview URL 計測時に uses-http2 audit が pass するか確認",
+      "next_action_type": "verify",
+      "stop_reason": null,
+      "owner": null,
+      "acceptance_ref": "20260426-lighthouse-ci-two-tier#受け入れ条件-5",
+      "risk_tier": "小",
+      "depends_on": [],
+      "updated_at": "2026-04-27T13:49:00+09:00",
+      "updated_by": "claude"
+    },
+    {
+      "id": "T-004",
+      "title": "既存 lighthouse.yml を PR-only に発火条件変更 + numberOfRuns 3化",
+      "spec_ref": "20260426-lighthouse-ci-two-tier#MODIFIED-1",
+      "state": "implemented",
+      "next_action": "PR 作成後、PR トリガで従来通り staticDistDir 計測が走ることを確認",
+      "next_action_type": "verify",
+      "stop_reason": null,
+      "owner": null,
+      "acceptance_ref": "20260426-lighthouse-ci-two-tier#受け入れ条件-1",
+      "risk_tier": "小",
+      "depends_on": [],
+      "updated_at": "2026-04-27T13:49:00+09:00",
+      "updated_by": "claude"
+    },
+    {
+      "id": "T-005",
+      "title": "README/docs に 2 段構成の方針を明記",
+      "spec_ref": "20260426-lighthouse-ci-two-tier#MODIFIED-3",
+      "state": "implemented",
+      "next_action": null,
+      "next_action_type": null,
+      "stop_reason": null,
+      "owner": null,
+      "acceptance_ref": null,
+      "risk_tier": "小",
+      "depends_on": ["T-001", "T-004"],
+      "updated_at": "2026-04-27T13:49:00+09:00",
+      "updated_by": "claude"
+    }
+  ]
+}

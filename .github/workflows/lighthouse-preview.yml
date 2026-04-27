@@ -1,0 +1,143 @@
+name: Lighthouse CI (preview URL)
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # JST 04:00（UTC 19:00）— Workers cron（JST 05:00）の前に走らせる
+    - cron: '0 19 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: lighthouse-preview-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  deployments: read
+
+jobs:
+  lighthouse-preview:
+    name: Lighthouse on Cloudflare Pages preview URL
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Resolve target SHA
+        id: sha
+        run: |
+          # schedule / workflow_dispatch では origin/main の HEAD を対象にする
+          # push の場合は github.sha がそのまま対象 SHA になる
+          if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            sha=$(git rev-parse origin/main)
+          else
+            sha="${{ github.sha }}"
+          fi
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "Target SHA: $sha"
+
+      - name: Wait for Cloudflare Pages deployment
+        id: deployment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ steps.sha.outputs.sha }}
+          # フォールバック先: 本プロジェクトの本番 Pages URL（SHA 不一致のリスクあり）
+          FALLBACK_URL: https://kaden-kaimi.pages.dev
+        run: |
+          set -uo pipefail
+
+          resolve_url() {
+            # 対象 SHA の Production deployment を探し、success ステータスから environment_url を取得
+            # environment 名は CF Pages の設定次第で大文字小文字が揺れるため case-insensitive
+            local deployments did status state env_url
+            deployments=$(gh api "repos/$REPO/deployments?sha=$SHA&per_page=20" \
+              --jq '.[] | select(.environment | test("production|cloudflare"; "i")) | .id' 2>/dev/null || true)
+
+            [ -z "$deployments" ] && return 1
+
+            for did in $deployments; do
+              status=$(gh api "repos/$REPO/deployments/$did/statuses?per_page=10" --jq '.[0]' 2>/dev/null || echo '{}')
+              state=$(echo "$status" | jq -r '.state // empty')
+              env_url=$(echo "$status" | jq -r '.environment_url // empty')
+              echo "  deployment id=$did state=$state url=$env_url" >&2
+              if [ "$state" = "success" ] && [ -n "$env_url" ]; then
+                echo "$env_url"
+                return 0
+              fi
+            done
+
+            return 1
+          }
+
+          # 主ループ: 30s 間隔で最大 10 回（合計 5 分）ポーリング
+          deployment_url=""
+          is_fallback=false
+          max_attempts=10
+          interval=30
+          for i in $(seq 1 $max_attempts); do
+            echo "Attempt $i/$max_attempts: querying deployments for $SHA"
+            if url=$(resolve_url); then
+              deployment_url="$url"
+              break
+            fi
+            sleep $interval
+          done
+
+          # フォールバック: 固定 sleep 60s 後にもう 1 回 query、それでもダメなら本番 URL を使う
+          if [ -z "$deployment_url" ]; then
+            echo "::warning::Cloudflare Pages deployment not ready after $((max_attempts*interval))s; sleeping 60s before retry"
+            sleep 60
+            if url=$(resolve_url); then
+              deployment_url="$url"
+            else
+              echo "::warning::Falling back to $FALLBACK_URL (SHA $SHA may not be deployed yet)"
+              deployment_url="$FALLBACK_URL"
+              is_fallback=true
+            fi
+          fi
+
+          echo "preview_url=$deployment_url" >> "$GITHUB_OUTPUT"
+          echo "is_fallback=$is_fallback" >> "$GITHUB_OUTPUT"
+          echo "Selected URL: $deployment_url (fallback=$is_fallback)"
+          {
+            echo "## Lighthouse preview target"
+            echo ""
+            echo "- URL: \`$deployment_url\`"
+            echo "- SHA: \`$SHA\`"
+            echo "- Fallback used: \`$is_fallback\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Run Lighthouse CI on preview URL
+        env:
+          PREVIEW_URL: ${{ steps.deployment.outputs.preview_url }}
+          # status check 連携は push trigger 時のみ意味があるため、それ以外では空文字を渡す
+          LHCI_GITHUB_APP_TOKEN: ${{ github.event_name == 'push' && secrets.LHCI_GITHUB_APP_TOKEN || '' }}
+        run: |
+          pnpm exec lhci autorun \
+            --config=.lighthouserc.preview.json \
+            --collect.url="${PREVIEW_URL%/}/" \
+            --collect.url="${PREVIEW_URL%/}/washers/panasonic-na-lx129dl/"
+
+      - name: Upload Lighthouse artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-preview-reports${{ steps.deployment.outputs.is_fallback == 'true' && '-fallback' || '' }}
+          path: .lighthouseci/
+          retention-days: 14
