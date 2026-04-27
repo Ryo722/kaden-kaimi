@@ -65,19 +65,30 @@ jobs:
 
           # 該当 check_run（cloudflare-workers-and-pages app の "Cloudflare Pages"）のうち
           # 最新の 1 件を JSON で返す。存在しなければ空文字。
+          # 注: 同一 SHA に複数 check_run（再実行等）がある場合は started_at の降順で最新を選ぶ。
+          # started_at が null の極端なケースは id を補助キーにして安定ソートする。
+          # gh api のエラー（401/403/429 など）は stderr をジョブログに残し、空文字を返して
+          # 上位の poll_check_run 側で「未登録扱い」として継続させる（HIGH 修正: 認証/レート問題が
+          # 完全に握りつぶされる旧実装からの改善）。
           fetch_check_run() {
-            gh api "repos/$REPO/commits/$SHA/check-runs?per_page=100" --jq \
+            local out
+            if ! out=$(gh api "repos/$REPO/commits/$SHA/check-runs?per_page=100" --jq \
               '[.check_runs[] | select(.app.slug == "cloudflare-workers-and-pages" and .name == "Cloudflare Pages")]
-                | sort_by(.started_at // "")
+                | sort_by([.started_at // "0000-00-00T00:00:00Z", .id])
                 | reverse
-                | .[0] // empty' 2>/dev/null || true
+                | .[0] // empty' 2>&1); then
+              echo "::warning::gh api check-runs failed: $out" >&2
+              echo ""
+              return 0
+            fi
+            echo "$out"
           }
 
           # 戻り値:
           #   0 = success（計測続行）
           #   1 = まだ完了していない（polling 継続）
           #   2 = CF ビルド失敗（workflow を fail させる）
-          #   3 = check_run が未登録（空配列。polling 継続、最終的に fallback）
+          #   3 = check_run が未登録（空配列または gh api エラー。polling 継続、最終的に fallback）
           poll_check_run() {
             local check_run status conclusion
             check_run=$(fetch_check_run)
@@ -118,14 +129,16 @@ jobs:
           }
 
           # 主ループ: 30s 間隔で最大 10 回（合計 5 分）ポーリング
+          # 注: poll_check_run は意図的に非ゼロ終了を返す。`|| rc=$?` で受けることで
+          # 将来 `set -e` を有効化した場合でも壊れないようにする。
           result=""
           is_fallback=false
           max_attempts=10
           interval=30
           for i in $(seq 1 $max_attempts); do
             echo "Attempt $i/$max_attempts: polling check_runs for $SHA"
-            poll_check_run
-            rc=$?
+            rc=0
+            poll_check_run || rc=$?
             case $rc in
               0) result="success"; break ;;
               2) exit 1 ;;
@@ -137,8 +150,8 @@ jobs:
           if [ -z "$result" ]; then
             echo "::warning::CF Pages check_run not in success state after $((max_attempts*interval))s; sleeping 60s before retry"
             sleep 60
-            poll_check_run
-            rc=$?
+            rc=0
+            poll_check_run || rc=$?
             case $rc in
               0) result="success" ;;
               2) exit 1 ;;
@@ -167,6 +180,10 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Run Lighthouse CI on preview URL
+        # 注: cf-build step が exit 1 した場合（CF ビルド失敗）はジョブ失敗状態となり、
+        # if: always() を付与していないため本ステップは走らない。
+        # 将来 if: always() を付ける改修をする場合、MEASURE_URL が空文字になりうる
+        # 点を考慮し空チェックを追加すること。
         env:
           MEASURE_URL: ${{ steps.cf-build.outputs.measure_url }}
           # status check 連携は push trigger 時のみ意味があるため、それ以外では空文字を渡す
