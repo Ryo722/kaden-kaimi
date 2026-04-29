@@ -31,6 +31,34 @@ deprecation_when: "プロジェクトが archive 化、または ConPort/Linear 
 
 <!-- 以下に新しい決定を追加していく -->
 
+## 2026-04-29: 楽天ウェブサービス 2026 新仕様への一括移行（旧仕様併存はしない）
+
+**判断**: spec `20260429-rakuten-api-2026-migration` に基づき、`workers/fetch-prices/src/rakuten.ts` を旧 `app.rakuten.co.jp/services/api/IchibaItem/Search/20170706` から新 `openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20260401` へ一括切替。`accessKey` と `Referer`/`Origin` ヘッダを必須化、レスポンスパーサを `formatVersion=2` 前提のフラット構造に書き換え。旧 endpoint へのフォールバックパスは持たない。
+
+**根拠**: 2026-04-26 以降の本番ランで楽天が全機種 100% null になっていた症状を調査した結果、原因は楽天が 2026-02-10 に告知した API 全面リプレース（旧 2026-05-13 完全停止）にコードが追従していないことだった。`.dev.vars` の `RAKUTEN_APP_ID` は新仕様の UUID で既に有効値、ライブ検証では新 endpoint に対し `400 accessKey must be present` まで通過。残作業はコードと残り 1 つの secret（accessKey）の投入のみ。タイムリミットが 14 日と短く、二系統併存の運用負荷が一括切替のロールバックリスク（git revert で吸収可能）を上回るため、フォールバックを持たず直接切替を選択。同時に「2 ヶ月以上 silent に null が続いた」原因である `if (!response.ok) return null` の握りつぶしに対し、4xx 観測 `console.warn` を最小限追加（applicationId は先頭 4 文字までマスク）して再発防止。
+
+**代替案**:
+- 旧 endpoint をフォールバックとして残す二系統併存 → 旧は 14 日で完全停止し、二系統テスト・mock・branch 分岐の維持コストが見合わない。不採用。
+- accessKey 投入のみで code は触らない（旧 endpoint で UUID を受け付ける裏ルート期待）→ 旧 endpoint は仕様上 UUID を弾くことをライブ検証済み。不採用。
+- 4xx 観測ログを別 PR に分ける → silent failure が今回 2 ヶ月続いた直接の原因のため、移行 PR と同時投入が筋。不採用。
+- Yahoo! 側も予防的に書き直す → Yahoo! v3 はリプレース告知なしで継続稼働中。スコープ拡大は不要。スキップ。
+
+**影響範囲**:
+- `workers/fetch-prices/src/rakuten.ts`（endpoint / 認証 / ヘッダ / parser / 4xx ログ全面更新）
+- `workers/fetch-prices/src/pipeline.ts`（`PipelineEnv` に 2 キー追加、call site）
+- `workers/fetch-prices/src/index.ts`（`requireSecrets` に 2 キー追加）
+- `workers/fetch-prices/wrangler.toml`（`RAKUTEN_REFERER` を `[vars]` に追加）
+- `workers/fetch-prices/.dev.vars.example`（applicationId コメント刷新、`RAKUTEN_ACCESS_KEY` 追加）
+- `workers/fetch-prices/src/{rakuten,pipeline,index}.test.ts`（フィクスチャ・検証更新）
+- `docs/api-integration.md`（楽天節を新仕様で書き換え、旧仕様は note）
+- `docs/devlog/2026-04-29.md`（経緯と検証手順）
+- `openspec/proposals/20260429-rakuten-api-2026-migration/spec.md`（本変更の spec）
+- 過去の `data/prices/drum-washer/*.json` の 2026-04-26〜04-28 `rakutenMin: null` レコードはそのまま保持（履歴の事実として残す）
+
+**廃止条件**: 新 endpoint で 7 日連続全機種の `rakutenMin` が安定取得され、かつ 2026-05-14 を越えた時点で spec を `archived` に。本決定エントリは恒久的に残す（API 移行という不可逆な転換点のため）。
+
+---
+
 ## 2026-04-27: Phase 2 自動化を main にマージ完了 + 旧 Lighthouse spec を archived 化
 
 **判断**: PR #11 (`feat(phase-2): workers cron 自動化 + 15 機種拡充 + harness Phase 5 移行`、merge commit `657daca`) を main にマージし、Phase 2 自動化作業（Workers Cron + 楽天/Yahoo!/GitHub Contents API + 機種マスタ 5→15 + minPrice/brand 名併記/filteredOutByMinPrice 観測）を本流に投入した。同時に旧 spec `20260426-lighthouse-ci-two-tier` を `status: archived` にし、後継 spec `20260427-lighthouse-check-runs-polling` への参照を `superseded_by` で明示した。役割を終えた `docs/handoffs/pr-phase-2-to-main.md` も削除。
