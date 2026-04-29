@@ -238,6 +238,13 @@
       "rakutenAvg": null,
       "yahooMin": 220000,
       "yahooAvg": 227900
+    },
+    {
+      "date": "2026-04-30",
+      "rakutenMin": null,
+      "rakutenAvg": null,
+      "yahooMin": 220000,
+      "yahooAvg": 227900
     }
   ]
 }
