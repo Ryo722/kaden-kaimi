@@ -17,7 +17,9 @@ import type { RakutenSearchInput } from "./rakuten";
 import type { YahooSearchInput } from "./yahoo";
 
 const ENV: PipelineEnv = {
-  RAKUTEN_APP_ID: "rk-app",
+  RAKUTEN_APP_ID: "12345678-1234-1234-1234-1234567890ab",
+  RAKUTEN_ACCESS_KEY: "pk_test_access_key",
+  RAKUTEN_REFERER: "https://kaden-kaimi.pages.dev/",
   YAHOO_CLIENT_ID: "yh-cl",
   GITHUB_TOKEN: "gh-pat",
   GITHUB_OWNER: "Ryo722",
@@ -226,6 +228,15 @@ describe("runPipeline — happy path", () => {
     // 1 sleep between 2 models (no sleep before first or after last)
     expect(m.sleep).toHaveBeenCalledTimes(1);
     expect(m.sleep).toHaveBeenCalledWith(1000);
+
+    // accessKey / referer / applicationId が rakuten 呼び出しに渡っていること
+    // （楽天 2026 新仕様で必須、spec 20260429-rakuten-api-2026-migration）
+    const rakArg = m.rakuten.mock.calls[0]?.[0] as RakutenSearchInput;
+    expect(rakArg.applicationId).toBe(
+      "12345678-1234-1234-1234-1234567890ab",
+    );
+    expect(rakArg.accessKey).toBe("pk_test_access_key");
+    expect(rakArg.referer).toBe("https://kaden-kaimi.pages.dev/");
   });
 });
 

@@ -17,9 +17,21 @@
 # 公開設定（GITHUB_OWNER 等）は wrangler.toml の [vars] で管理しているため、
 # このファイルにはシークレットのみを記載する。
 
-# 楽天ウェブサービス applicationId（20 桁の数字）
-# 取得元: https://webservice.rakuten.co.jp/
+# 楽天ウェブサービス applicationId（UUID 形式）
+# 2026-02-10 の API 全面リプレースに伴い、新仕様アプリ登録で発行される
+# UUID 形式（例: 2fc160ec-26f2-4a04-888f-4b6eb504b0e6）。
+# 旧 20 桁数字の applicationId は 2026-05-13 で廃止のため利用不可。
+# 取得元: https://webservice.rakuten.co.jp/ → Developer Dashboard でアプリ再登録
 RAKUTEN_APP_ID=PLACEHOLDER_RAKUTEN_APPLICATION_ID
+
+# 楽天ウェブサービス accessKey（`pk_` で始まる文字列）
+# 2026 新仕様で applicationId と併せて必須。Developer Dashboard で発行。
+RAKUTEN_ACCESS_KEY=PLACEHOLDER_RAKUTEN_ACCESS_KEY
+
+# 楽天 API 呼び出し時の Referer / Origin ヘッダ値（任意の URL でも通るが、
+# 自プロジェクトのドメインを推奨）。通常は wrangler.toml [vars] の値が
+# 使われる。ローカルで上書きしたい場合のみここに記載。
+# RAKUTEN_REFERER=https://kaden-kaimi.pages.dev/
 
 # Yahoo! デベロッパーネットワーク Client ID（dj00... で始まる文字列）
 # 取得元: https://developer.yahoo.co.jp/start/

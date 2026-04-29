@@ -111,6 +111,8 @@ export default {
 export function requireSecrets(env: Env): string[] {
   const required: Array<keyof Env> = [
     "RAKUTEN_APP_ID",
+    "RAKUTEN_ACCESS_KEY",
+    "RAKUTEN_REFERER",
     "YAHOO_CLIENT_ID",
     "GITHUB_TOKEN",
     "GITHUB_OWNER",

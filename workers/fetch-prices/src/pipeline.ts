@@ -60,6 +60,10 @@ export type WorkerModel = z.infer<typeof WorkerModelSchema>;
 
 export interface PipelineEnv {
   RAKUTEN_APP_ID: string;
+  /** 楽天 2026 新仕様で必須。`pk_` 始まりの文字列。 */
+  RAKUTEN_ACCESS_KEY: string;
+  /** 楽天 2026 新仕様で Referer / Origin ヘッダに使う URL。wrangler.toml [vars] で配布。 */
+  RAKUTEN_REFERER: string;
   YAHOO_CLIENT_ID: string;
   GITHUB_TOKEN: string;
   GITHUB_OWNER: string;
@@ -253,6 +257,8 @@ async function processModel(
         brandDisplayName,
         rakutenItemCode: model.externalIds.rakutenItemCode,
         applicationId: env.RAKUTEN_APP_ID,
+        accessKey: env.RAKUTEN_ACCESS_KEY,
+        referer: env.RAKUTEN_REFERER,
         userAgent: env.USER_AGENT,
         ...(rakutenMinPrice !== undefined && { minPrice: rakutenMinPrice }),
       }),

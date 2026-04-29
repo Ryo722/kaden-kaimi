@@ -4,7 +4,9 @@ import { searchRakuten, RAKUTEN_ENDPOINT } from "./rakuten";
 const BASE_INPUT = {
   modelNumber: "NA-LX129DL",
   rakutenItemCode: null,
-  applicationId: "test-app-id",
+  applicationId: "12345678-1234-1234-1234-1234567890ab",
+  accessKey: "pk_test_access_key",
+  referer: "https://kaden-kaimi.pages.dev/",
   userAgent: "test-ua/0.1",
 };
 
@@ -15,7 +17,18 @@ function mockJson(body: unknown, status = 200): Response {
   });
 }
 
-describe("searchRakuten", () => {
+/**
+ * 新仕様 (formatVersion=2) の `Items[]` を作るヘルパー。
+ * 外側キーは大文字 `Items`（実 API レスポンスで確認、2026-04-29 ライブ検証）、
+ * 内側は formatVersion=2 のためフラット（`Item` ラッパーなし）。
+ */
+function newItems(
+  items: Array<{ itemCode: string; itemPrice: number | string; availability: number }>,
+): { Items: typeof items } {
+  return { Items: items };
+}
+
+describe("searchRakuten (2026 new API: openapi.rakuten.co.jp)", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.stubGlobal("fetch", vi.fn());
@@ -26,33 +39,21 @@ describe("searchRakuten", () => {
     vi.unstubAllGlobals();
   });
 
-  it("returns aggregated price quote on success", async () => {
+  it("targets the new openapi.rakuten.co.jp endpoint", () => {
+    expect(RAKUTEN_ENDPOINT).toBe(
+      "https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20260401",
+    );
+  });
+
+  it("returns aggregated price quote on success (flat items[])", async () => {
     vi.mocked(globalThis.fetch).mockResolvedValueOnce(
-      mockJson({
-        Items: [
-          {
-            Item: {
-              itemCode: "shop1:item-1",
-              itemPrice: 280000,
-              availability: 1,
-            },
-          },
-          {
-            Item: {
-              itemCode: "shop2:item-2",
-              itemPrice: 295000,
-              availability: 1,
-            },
-          },
-          {
-            Item: {
-              itemCode: "shop3:item-3",
-              itemPrice: 310000,
-              availability: 0,
-            },
-          },
-        ],
-      }),
+      mockJson(
+        newItems([
+          { itemCode: "shop1:item-1", itemPrice: 280000, availability: 1 },
+          { itemCode: "shop2:item-2", itemPrice: 295000, availability: 1 },
+          { itemCode: "shop3:item-3", itemPrice: 310000, availability: 0 },
+        ]),
+      ),
     );
 
     const promise = searchRakuten(BASE_INPUT);
@@ -69,20 +70,52 @@ describe("searchRakuten", () => {
     });
   });
 
+  it("includes accessKey and formatVersion=2 in URL", async () => {
+    const mockFetch = vi.mocked(globalThis.fetch);
+    mockFetch.mockResolvedValueOnce(
+      mockJson(
+        newItems([{ itemCode: "x:y", itemPrice: 280000, availability: 1 }]),
+      ),
+    );
+
+    const promise = searchRakuten(BASE_INPUT);
+    await vi.runAllTimersAsync();
+    await promise;
+
+    const calledUrl = mockFetch.mock.calls[0]?.[0] as string;
+    expect(calledUrl).toContain("applicationId=12345678-1234-1234-1234-1234567890ab");
+    expect(calledUrl).toContain("accessKey=pk_test_access_key");
+    expect(calledUrl).toContain("formatVersion=2");
+  });
+
+  it("sends User-Agent + Referer + Origin headers", async () => {
+    const mockFetch = vi.mocked(globalThis.fetch);
+    mockFetch.mockResolvedValueOnce(
+      mockJson(
+        newItems([{ itemCode: "x:y", itemPrice: 280000, availability: 1 }]),
+      ),
+    );
+
+    const promise = searchRakuten(BASE_INPUT);
+    await vi.runAllTimersAsync();
+    await promise;
+
+    const init = mockFetch.mock.calls[0]?.[1] as RequestInit | undefined;
+    expect(init?.headers).toEqual({
+      "User-Agent": "test-ua/0.1",
+      Referer: "https://kaden-kaimi.pages.dev/",
+      Origin: "https://kaden-kaimi.pages.dev/",
+    });
+  });
+
   it("uses itemCode lookup when rakutenItemCode is supplied", async () => {
     const mockFetch = vi.mocked(globalThis.fetch);
     mockFetch.mockResolvedValueOnce(
-      mockJson({
-        Items: [
-          {
-            Item: {
-              itemCode: "myshop:my-item",
-              itemPrice: 199800,
-              availability: 1,
-            },
-          },
-        ],
-      }),
+      mockJson(
+        newItems([
+          { itemCode: "myshop:my-item", itemPrice: 199800, availability: 1 },
+        ]),
+      ),
     );
 
     const promise = searchRakuten({
@@ -101,11 +134,9 @@ describe("searchRakuten", () => {
   it("composes 'brandName modelNumber' keyword when brandDisplayName is supplied", async () => {
     const mockFetch = vi.mocked(globalThis.fetch);
     mockFetch.mockResolvedValueOnce(
-      mockJson({
-        Items: [
-          { Item: { itemCode: "shop:p", itemPrice: 250000, availability: 1 } },
-        ],
-      }),
+      mockJson(
+        newItems([{ itemCode: "shop:p", itemPrice: 250000, availability: 1 }]),
+      ),
     );
 
     const promise = searchRakuten({
@@ -126,11 +157,9 @@ describe("searchRakuten", () => {
   it("uses bare modelNumber as keyword when brandDisplayName is omitted", async () => {
     const mockFetch = vi.mocked(globalThis.fetch);
     mockFetch.mockResolvedValueOnce(
-      mockJson({
-        Items: [
-          { Item: { itemCode: "shop:p", itemPrice: 250000, availability: 1 } },
-        ],
-      }),
+      mockJson(
+        newItems([{ itemCode: "shop:p", itemPrice: 250000, availability: 1 }]),
+      ),
     );
 
     const promise = searchRakuten(BASE_INPUT);
@@ -145,11 +174,9 @@ describe("searchRakuten", () => {
   it("ignores brandDisplayName when rakutenItemCode is supplied", async () => {
     const mockFetch = vi.mocked(globalThis.fetch);
     mockFetch.mockResolvedValueOnce(
-      mockJson({
-        Items: [
-          { Item: { itemCode: "shop:p", itemPrice: 250000, availability: 1 } },
-        ],
-      }),
+      mockJson(
+        newItems([{ itemCode: "shop:p", itemPrice: 250000, availability: 1 }]),
+      ),
     );
 
     const promise = searchRakuten({
@@ -168,17 +195,11 @@ describe("searchRakuten", () => {
   it("falls back to keyword search when rakutenItemCode is null", async () => {
     const mockFetch = vi.mocked(globalThis.fetch);
     mockFetch.mockResolvedValueOnce(
-      mockJson({
-        Items: [
-          {
-            Item: {
-              itemCode: "shop:fallback",
-              itemPrice: 250000,
-              availability: 1,
-            },
-          },
-        ],
-      }),
+      mockJson(
+        newItems([
+          { itemCode: "shop:fallback", itemPrice: 250000, availability: 1 },
+        ]),
+      ),
     );
 
     const promise = searchRakuten(BASE_INPUT);
@@ -191,7 +212,9 @@ describe("searchRakuten", () => {
   });
 
   it("returns null when Items is empty", async () => {
-    vi.mocked(globalThis.fetch).mockResolvedValueOnce(mockJson({ Items: [] }));
+    vi.mocked(globalThis.fetch).mockResolvedValueOnce(
+      mockJson(newItems([])),
+    );
 
     const promise = searchRakuten(BASE_INPUT);
     await vi.runAllTimersAsync();
@@ -200,9 +223,15 @@ describe("searchRakuten", () => {
     expect(result).toBeNull();
   });
 
-  it("returns null when response is non-OK", async () => {
+  it("returns null when response is non-OK and logs a 4xx warn", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     vi.mocked(globalThis.fetch).mockResolvedValueOnce(
-      new Response("forbidden", { status: 403 }),
+      new Response(
+        JSON.stringify({
+          errors: { errorCode: 403, errorMessage: "REQUEST_CONTEXT_BODY_HTTP_REFERRER_MISSING" },
+        }),
+        { status: 403, headers: { "Content-Type": "application/json" } },
+      ),
     );
 
     const promise = searchRakuten(BASE_INPUT);
@@ -210,6 +239,32 @@ describe("searchRakuten", () => {
     const result = await promise;
 
     expect(result).toBeNull();
+    expect(warn).toHaveBeenCalledOnce();
+    const logged = warn.mock.calls[0]?.[0] as string;
+    expect(logged).toContain('"event":"rakuten.api_4xx"');
+    expect(logged).toContain('"status":403');
+    expect(logged).toContain('"errorCode":403');
+    expect(logged).toContain("REQUEST_CONTEXT_BODY_HTTP_REFERRER_MISSING");
+    // applicationId は先頭 4 文字までしか出さない
+    expect(logged).toContain('"applicationIdPrefix":"1234***"');
+    expect(logged).not.toContain(BASE_INPUT.applicationId);
+    warn.mockRestore();
+  });
+
+  it("does not log 4xx for retryable 5xx (handled in retry layer)", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    // 503 → retry layer で 3 回失敗 → fetchWithRetry が 503 をそのまま返す
+    vi.mocked(globalThis.fetch).mockResolvedValue(
+      new Response("{}", { status: 503 }),
+    );
+
+    const promise = searchRakuten(BASE_INPUT);
+    await vi.runAllTimersAsync();
+    const result = await promise;
+
+    expect(result).toBeNull();
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
   });
 
   it("returns null on persistent network error after retries", async () => {
@@ -246,29 +301,34 @@ describe("searchRakuten", () => {
     expect(result).toBeNull();
   });
 
-  it("ignores items with non-numeric or zero prices", async () => {
+  it("rejects legacy Items[].Item nested format (formatVersion=1 payload)", async () => {
+    // 万一サーバが formatVersion を無視して旧 v1 構造で返してきた場合、
+    // 各要素は { Item: {...} } で itemPrice は obj 直下にないため、
+    // 新パーサの `typeof obj.itemPrice === "number"` 判定で全件弾かれて null。
     vi.mocked(globalThis.fetch).mockResolvedValueOnce(
       mockJson({
         Items: [
-          {
-            Item: {
-              itemCode: "shop:bad-1",
-              itemPrice: "invalid",
-              availability: 1,
-            },
-          },
-          {
-            Item: { itemCode: "shop:bad-2", itemPrice: 0, availability: 1 },
-          },
-          {
-            Item: {
-              itemCode: "shop:good",
-              itemPrice: 250000,
-              availability: 1,
-            },
-          },
+          { Item: { itemCode: "x:y", itemPrice: 280000, availability: 1 } },
         ],
       }),
+    );
+
+    const promise = searchRakuten(BASE_INPUT);
+    await vi.runAllTimersAsync();
+    const result = await promise;
+
+    expect(result).toBeNull();
+  });
+
+  it("ignores items with non-numeric or zero prices", async () => {
+    vi.mocked(globalThis.fetch).mockResolvedValueOnce(
+      mockJson(
+        newItems([
+          { itemCode: "shop:bad-1", itemPrice: "invalid", availability: 1 },
+          { itemCode: "shop:bad-2", itemPrice: 0, availability: 1 },
+          { itemCode: "shop:good", itemPrice: 250000, availability: 1 },
+        ]),
+      ),
     );
 
     const promise = searchRakuten(BASE_INPUT);
@@ -287,24 +347,12 @@ describe("searchRakuten", () => {
 
   it("flags available=false when no item has availability >= 1", async () => {
     vi.mocked(globalThis.fetch).mockResolvedValueOnce(
-      mockJson({
-        Items: [
-          {
-            Item: {
-              itemCode: "shop:s1",
-              itemPrice: 200000,
-              availability: 0,
-            },
-          },
-          {
-            Item: {
-              itemCode: "shop:s2",
-              itemPrice: 220000,
-              availability: 0,
-            },
-          },
-        ],
-      }),
+      mockJson(
+        newItems([
+          { itemCode: "shop:s1", itemPrice: 200000, availability: 0 },
+          { itemCode: "shop:s2", itemPrice: 220000, availability: 0 },
+        ]),
+      ),
     );
 
     const promise = searchRakuten(BASE_INPUT);
@@ -315,58 +363,16 @@ describe("searchRakuten", () => {
     expect(result?.min).toBe(200000);
   });
 
-  it("sends User-Agent header", async () => {
-    const mockFetch = vi.mocked(globalThis.fetch);
-    mockFetch.mockResolvedValueOnce(
-      mockJson({
-        Items: [
-          { Item: { itemCode: "x:y", itemPrice: 1000, availability: 1 } },
-        ],
-      }),
-    );
-
-    const promise = searchRakuten(BASE_INPUT);
-    await vi.runAllTimersAsync();
-    await promise;
-
-    const init = mockFetch.mock.calls[0]?.[1] as RequestInit | undefined;
-    expect(init?.headers).toEqual({ "User-Agent": "test-ua/0.1" });
-  });
-
   it("excludes hits below minPrice and aggregates only the rest", async () => {
     vi.mocked(globalThis.fetch).mockResolvedValueOnce(
-      mockJson({
-        Items: [
-          {
-            Item: {
-              itemCode: "parts:1320",
-              itemPrice: 1320,
-              availability: 1,
-            },
-          },
-          {
-            Item: {
-              itemCode: "manual:4980",
-              itemPrice: 4980,
-              availability: 1,
-            },
-          },
-          {
-            Item: {
-              itemCode: "real:280000",
-              itemPrice: 280000,
-              availability: 1,
-            },
-          },
-          {
-            Item: {
-              itemCode: "real:295000",
-              itemPrice: 295000,
-              availability: 1,
-            },
-          },
-        ],
-      }),
+      mockJson(
+        newItems([
+          { itemCode: "parts:1320", itemPrice: 1320, availability: 1 },
+          { itemCode: "manual:4980", itemPrice: 4980, availability: 1 },
+          { itemCode: "real:280000", itemPrice: 280000, availability: 1 },
+          { itemCode: "real:295000", itemPrice: 295000, availability: 1 },
+        ]),
+      ),
     );
 
     const promise = searchRakuten({ ...BASE_INPUT, minPrice: 50000 });
@@ -379,18 +385,18 @@ describe("searchRakuten", () => {
       available: true,
       hitCount: 2,
       topItemCode: "real:280000",
-      filteredOutByMinPrice: 2, // 1320 と 4980 が除外された
+      filteredOutByMinPrice: 2,
     });
   });
 
   it("returns null when every hit is below minPrice", async () => {
     vi.mocked(globalThis.fetch).mockResolvedValueOnce(
-      mockJson({
-        Items: [
-          { Item: { itemCode: "parts:1", itemPrice: 1320, availability: 1 } },
-          { Item: { itemCode: "parts:2", itemPrice: 4980, availability: 1 } },
-        ],
-      }),
+      mockJson(
+        newItems([
+          { itemCode: "parts:1", itemPrice: 1320, availability: 1 },
+          { itemCode: "parts:2", itemPrice: 4980, availability: 1 },
+        ]),
+      ),
     );
 
     const promise = searchRakuten({ ...BASE_INPUT, minPrice: 50000 });
@@ -403,11 +409,9 @@ describe("searchRakuten", () => {
   it("propagates minPrice as an API query parameter", async () => {
     const mockFetch = vi.mocked(globalThis.fetch);
     mockFetch.mockResolvedValueOnce(
-      mockJson({
-        Items: [
-          { Item: { itemCode: "x:y", itemPrice: 280000, availability: 1 } },
-        ],
-      }),
+      mockJson(
+        newItems([{ itemCode: "x:y", itemPrice: 280000, availability: 1 }]),
+      ),
     );
 
     const promise = searchRakuten({ ...BASE_INPUT, minPrice: 50000 });
@@ -421,11 +425,9 @@ describe("searchRakuten", () => {
   it("does not append minPrice param when omitted or zero", async () => {
     const mockFetch = vi.mocked(globalThis.fetch);
     mockFetch.mockResolvedValue(
-      mockJson({
-        Items: [
-          { Item: { itemCode: "x:y", itemPrice: 1000, availability: 1 } },
-        ],
-      }),
+      mockJson(
+        newItems([{ itemCode: "x:y", itemPrice: 1000, availability: 1 }]),
+      ),
     );
 
     let promise = searchRakuten(BASE_INPUT);
@@ -444,17 +446,11 @@ describe("searchRakuten", () => {
     mockFetch
       .mockResolvedValueOnce(new Response("rate limited", { status: 429 }))
       .mockResolvedValueOnce(
-        mockJson({
-          Items: [
-            {
-              Item: {
-                itemCode: "shop:retry",
-                itemPrice: 270000,
-                availability: 1,
-              },
-            },
-          ],
-        }),
+        mockJson(
+          newItems([
+            { itemCode: "shop:retry", itemPrice: 270000, availability: 1 },
+          ]),
+        ),
       );
 
     const promise = searchRakuten(BASE_INPUT);

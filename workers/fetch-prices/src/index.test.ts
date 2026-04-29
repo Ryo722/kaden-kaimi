@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import { requireSecrets, type Env } from "./index";
 
 const FULL_ENV: Env = {
-  RAKUTEN_APP_ID: "rk-app",
+  RAKUTEN_APP_ID: "12345678-1234-1234-1234-1234567890ab",
+  RAKUTEN_ACCESS_KEY: "pk_test",
+  RAKUTEN_REFERER: "https://kaden-kaimi.pages.dev/",
   YAHOO_CLIENT_ID: "yh-cl",
   GITHUB_TOKEN: "gh-pat",
   GITHUB_OWNER: "Ryo722",
@@ -21,6 +23,16 @@ describe("requireSecrets", () => {
   it("flags missing RAKUTEN_APP_ID", () => {
     const env = { ...FULL_ENV, RAKUTEN_APP_ID: "" };
     expect(requireSecrets(env)).toContain("RAKUTEN_APP_ID");
+  });
+
+  it("flags missing RAKUTEN_ACCESS_KEY (2026 new API requirement)", () => {
+    const env = { ...FULL_ENV, RAKUTEN_ACCESS_KEY: "" };
+    expect(requireSecrets(env)).toContain("RAKUTEN_ACCESS_KEY");
+  });
+
+  it("flags missing RAKUTEN_REFERER (2026 new API requirement)", () => {
+    const env = { ...FULL_ENV, RAKUTEN_REFERER: "" };
+    expect(requireSecrets(env)).toContain("RAKUTEN_REFERER");
   });
 
   it("flags missing USER_AGENT (P2 codex review fix)", () => {
