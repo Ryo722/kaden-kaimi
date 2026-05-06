@@ -82,6 +82,7 @@
 - `docs/logic-specs.md` — 5軸計算ロジック仕様
 - `docs/coding-conventions.md` — コーディング規約
 - `docs/api-integration.md` — 外部 API 連携仕様
+- `.takt/config.yaml` — Takt CLI プロジェクト設定（provider / model / language / concurrency / branch_name_strategy）
 
 ## ワークフロー
 
@@ -96,3 +97,47 @@
 ### tasks.json 退避ルール
 - `active_specs` が **3 件以上**、または spec が `implemented/archived` 化したら、対応 task を `tasks.archived.json` へ移動
 - 退避時は `docs/devlog/<date>.md` に 1 行記録（spec id と task 数）
+
+## Takt 統合運用
+
+2026-05-06 より公式 Takt CLI (`nrslib/takt`) を `.takt/` 配下で運用開始（decision-log 2026-05-06 参照）。
+
+### 役割分離
+
+| ファイル | 役割 | 単一ソース性 |
+|---|---|---|
+| `tasks.json` | **state-first 実行台帳**。pending / in_progress / blocked / review / done の全タスクを俯瞰。next_action / stop_reason / acceptance_ref を持つ | 「現在状態と次アクション」 |
+| `.takt/tasks.yaml` | **Takt が消化する実行キュー**。`takt run` で順次走る待機タスクのみ | 「いま走らせる対象」 |
+
+**避けること**: `.takt/tasks.yaml` だけに書いて `tasks.json` を更新し忘れると「現在何が止まっているか」が1ファイルで把握できなくなる。
+
+### 自律進行と人間承認の境界
+
+kaden-kaimi の `risk_tier`（小 / 中 / 大）と Takt ワークフロー段階を対応させる:
+
+| risk_tier | Takt ワークフロー | 人間承認タイミング |
+|---|---|---|
+| 小（タイプミス・コメント・ドキュメント） | `default`（plan → write_tests → implement → ai_review → ai_fix → reviewers → fix） | PR レビューのみ |
+| 中（新機能・バグ修正・リファクタ） | `default` | PR レビュー + テスト確認 |
+| 大（DBスキーマ・auth・データ操作） | `default` + 手動 security-review ステップ追加 | 実装前仕様確認 + PR レビュー |
+
+### Skill `/takt` の非使用方針
+
+kaden-kaimi では Skill `/takt`（ピースエンジン、`~/.claude/skills/takt/SKILL.md`）は**使わない**。公式 Takt CLI のみで運用する（decision-log 2026-05-06 に明記済）。
+
+- **公式 Takt CLI**: branch / worktree / PR を伴う本番運用。`takt run` でワークフロー駆動マルチエージェントを起動
+- **Skill `/takt` ピースエンジン**: branch を切らない単発の検討用。kaden-kaimi では使用しない
+
+### 推奨実行フラグ
+
+```sh
+takt run --auto-pr --draft
+```
+
+- `--auto-pr`: ワークフロー完了後に GitHub PR を自動作成
+- `--draft`: draft PR として作成し、人間が内容確認後に「ready for review」へ昇格させる
+- kaden-kaimi は実験的運用段階のため、直接 merge を防ぐ意図で `--draft` を常時推奨
+
+### 参照
+
+- ワークスペース共通の Takt 運用: `~/claude-workspace/docs/takt-workflow.md`（§2 使い分け / §3 役割分離 / §6 承認境界）
