@@ -31,6 +31,30 @@ deprecation_when: "プロジェクトが archive 化、または ConPort/Linear 
 
 <!-- 以下に新しい決定を追加していく -->
 
+## 2026-05-06: Takt CLI を `.takt/` で導入（onboarding phase 1）
+
+**判断**: 公式 Takt CLI (`nrslib/takt`) を本 PJ で運用開始。`tasks.json` (state-first 実行台帳、spec-task / tasks-master 連携、schema 1.0) と `.takt/tasks.yaml` (Takt が消化する実行キュー) の役割を分離し、多段品質ゲートが必要なタスク向けの補完手段として導入する。
+
+**根拠**: ワークスペース全体の Takt onboarding 第二弾（Phase 4）の対象として選定。第一弾 5 PJ（DuelMastersPlays / quest-log / portfolio / pokemon-champions / J-Quants）で workflow 駆動マルチエージェント・オーケストレーション の本番運用可能性を実機確認済（Phase 2 試運転 4 PJ で `--auto-pr --draft` での draft PR 自動生成を確認）。kaden-kaimi は `tasks.json` を独自スキーマで運用しており、Takt の workflow 駆動と相補的に組み合わせることで、`risk_tier: 中` 以上のタスクで planner → coder → 並列 review → 完了 の品質ゲート付き実行を可能にする。
+
+**代替案**:
+- Takt を導入せず `tasks.json` + 手動実行のみ継続 → 単発タスクは現状維持で十分だが、複数モジュール跨ぎや schema 変更等の中・大規模タスクで品質ゲートが弱い。複数 spec 同時進行時の orchestration が必要になる前に基盤を整える方が筋。不採用。
+- Skill `/takt`（ピースエンジン）を併用 → ピースエンジンは branch を切らない単発検討用で、本 PJ の PR ベース運用と用途が違う。混乱を避けるため公式 Takt CLI のみ運用する。
+- workflow キーを `.takt/config.yaml` に置く → Phase 2 試運転で「Configuration error: Unrecognized key」が判明済。`tasks.yaml` の各エントリで指定する仕様。
+
+**影響範囲**:
+- `.takt/config.yaml`（新規、`provider: claude-sdk` / `model: sonnet` / `language: ja` / `concurrency: 1` / `branch_name_strategy: ai`）
+- `.takt/.gitignore`（新規、ワークスペース標準パターン）
+- `.takt/tasks.yaml`（ローカル運用キュー、gitignore 済）
+- `decision-log.md`（本エントリ）
+- `CLAUDE.md`（Takt 統合運用節を Phase 4-C 試運転で追加予定、本 commit には含めない）
+
+**廃止条件**: `tasks.json` 単体運用で品質ゲートが十分機能するようになり、Takt の workflow 駆動が冗長になった場合（半年運用して Takt 経由の merge が月 1 件未満なら見直し）。または Takt 公式が大きな後方互換性破壊を入れた場合。
+
+**参照**: `~/claude-workspace/docs/takt-workflow.md` / `~/claude-workspace/docs/devlog/2026-05-06-takt-phase-3-results.md`
+
+---
+
 ## 2026-04-29: 楽天ウェブサービス 2026 新仕様への一括移行（旧仕様併存はしない）
 
 **判断**: spec `20260429-rakuten-api-2026-migration` に基づき、`workers/fetch-prices/src/rakuten.ts` を旧 `app.rakuten.co.jp/services/api/IchibaItem/Search/20170706` から新 `openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20260401` へ一括切替。`accessKey` と `Referer`/`Origin` ヘッダを必須化、レスポンスパーサを `formatVersion=2` 前提のフラット構造に書き換え。旧 endpoint へのフォールバックパスは持たない。
