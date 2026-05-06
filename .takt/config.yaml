@@ -1,0 +1,5 @@
+provider: claude-sdk
+model: sonnet
+language: ja
+concurrency: 1
+branch_name_strategy: ai

@@ -1,0 +1,20 @@
+# Ignore runtime/session data
+runs/
+clone-meta/
+worktree-sessions/
+persona_sessions.json
+session-state.json
+tasks.yaml
+tasks/
+
+# This file itself
+!.gitignore
+
+# Track project configuration and facets
+!config.yaml
+!pieces/
+!pieces/**
+!facets/
+!facets/**
+!workflows/
+!workflows/**
